@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="NGS-ChatApp-Rinku-User.creds" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="NGS-ChatApp-Rinku-User.creds" />
   </ItemGroup>
 

@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="NGS-ChatApp-Rinku-User.creds" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="NGS-ChatApp-Rinku-User.creds" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Guna.UI2.WinForms" Version="2.0.4.7" />
+    <PackageReference Include="NATS.Client.Core" Version="2.7.0-preview.5" />
+  </ItemGroup>
+
+</Project>

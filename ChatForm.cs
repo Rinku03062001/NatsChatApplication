@@ -5,12 +5,12 @@ namespace ChatAppNats
     {
        
         ChatService chatService;
-        
+        private readonly string userName;
 
-        public ChatForm()
+        public ChatForm(string userName)
         {
             InitializeComponent();
-            
+            this.userName = userName;
 
             chatService = new ChatService();
 

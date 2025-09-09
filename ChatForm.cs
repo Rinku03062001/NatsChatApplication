@@ -1,11 +1,8 @@
 using ChatAppNats.Services;
-using NATS.Client.Core;
-using System.Reflection;
 namespace ChatAppNats
 {
     public partial class ChatForm : Form
     {
-        // Change the declaration of _nats to nullable to fix CS8618
        
         ChatService chatService;
         
@@ -21,7 +18,7 @@ namespace ChatAppNats
             chatService.OnMessageReceived += AppendMessage;
             chatService.OnStatusChanged += AppendMessage;
 
-            //Connect
+            // await Connect
             _ = chatService.ConnectToNats();
         }
 

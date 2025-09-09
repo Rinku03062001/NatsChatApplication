@@ -23,7 +23,9 @@ namespace ChatAppNats.Services
         {
             try
             {
-                // 1. Load JWT and Seed from Creds
+                //
+                // 1. Load the JWT and Seed from Credentials
+                //
                 var (jwt, seed) = LoadCreds();
                 if (jwt == null || seed == null)
                 {
@@ -68,7 +70,9 @@ namespace ChatAppNats.Services
             string credsContent = reader.ReadToEnd();
 
 
+            //
             // Parse creds
+            //
             var lines = credsContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
             string? jwt = null, seed = null;

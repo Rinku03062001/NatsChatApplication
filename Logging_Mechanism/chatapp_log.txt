@@ -1,0 +1,12 @@
+2025-09-09 20:18:03.9024 | INFO | Application Starting...
+2025-09-09 20:18:08.6257 | INFO | Attempting to connect to NATS server...
+2025-09-09 20:18:08.6333 | INFO | Credentials loaded successfully.
+2025-09-09 20:18:08.7075 | INFO | ChatForm initialized for user: rinku
+2025-09-09 20:18:10.5608 | INFO | NATS connection established to nats://connect.ngs.global:4222
+2025-09-09 20:18:10.5608 | INFO | Subscribed to subject: chat.room1
+2025-09-09 20:18:10.5608 | INFO | Message appended directly: Connected to NATS server
+2025-09-09 20:18:10.5608 | INFO | Connected to NATS server successfully.
+2025-09-09 20:18:16.2023 | INFO | Message sent: rinku: hi
+2025-09-09 20:18:16.2023 | INFO | Message sent: rinku: hi
+2025-09-09 20:18:16.3543 | INFO | Message appended via Invoke: rinku: hi
+2025-09-09 20:18:16.3543 | INFO | Messsage received: rinku: hi

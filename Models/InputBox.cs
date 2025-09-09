@@ -1,6 +1,6 @@
 ﻿namespace ChatAppNats
 {
-    public static class InputBox
+    public static class InputBox 
     {
         public static string Show(string prompt, string title)
         {
@@ -17,6 +17,7 @@
                 Padding = new Padding(20)
             };
 
+            // Styling for the prompt label
             Label lblPrompt = new Label()
             {
                 Text = prompt,
@@ -27,6 +28,7 @@
                 ForeColor = Color.FromArgb(241, 241, 241)
             };
 
+            // Styling for the textbox
             TextBox txtInput = new TextBox()
             {
                 Left = 20,
@@ -40,7 +42,7 @@
                 Padding = new Padding(5)
             };
 
-
+            // Styling for OK button
             Button btnOk = new Button()
             {
                 Text = "OK",
@@ -54,7 +56,9 @@
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 9, FontStyle.Bold)
             };
+            btnOk.FlatAppearance.BorderSize = 0;
 
+            // Styling for Cancel button
             Button btnCancel = new Button()
             {
                 Text = "Cancel",
@@ -77,8 +81,7 @@
             btnCancel.MouseEnter += (sender, e) => { btnCancel.BackColor = Color.FromArgb(120, 120, 120); };
             btnCancel.MouseLeave += (sender, e) => { btnCancel.BackColor = Color.FromArgb(86, 86, 86); };
 
-
-
+            // Add controls to form
             inputForm.Controls.Add(lblPrompt);
             inputForm.Controls.Add(txtInput);
             inputForm.Controls.Add(btnOk);
@@ -105,7 +108,6 @@
 
             // Set focus to textbox
             inputForm.Shown += (sender, e) => txtInput.Focus();
-
 
             return inputForm.ShowDialog() == DialogResult.OK ? txtInput.Text : string.Empty;
         }

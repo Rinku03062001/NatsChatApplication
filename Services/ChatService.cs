@@ -1,11 +1,6 @@
 ﻿using NATS.Client.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text;
-using System.Threading.Tasks;
+using NLog;
 
 namespace ChatAppNats.Services
 {
@@ -14,6 +9,8 @@ namespace ChatAppNats.Services
         private NatsConnection? _nats;
         private const string Subject = "chat.room1";
 
+        // NLog Logger
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public event Action<string>? OnMessageReceived;
         public event Action<string>? OnStatusChanged;
@@ -23,6 +20,7 @@ namespace ChatAppNats.Services
         {
             try
             {
+                logger.Info("Attempting to connect to NATS server...");
                 //
                 // 1. Load the JWT and Seed from Credentials
                 //
@@ -42,10 +40,12 @@ namespace ChatAppNats.Services
 
 
                 OnStatusChanged?.Invoke("Connected to NATS server");
+                logger.Info("Connected to NATS server successfully.");
             }
             catch (Exception ex)
             {
                 OnStatusChanged?.Invoke("Connection Failed: " + ex.Message);
+                logger.Error(ex, "Failed to connect to NATS server.");
             }
         }
 
@@ -88,8 +88,11 @@ namespace ChatAppNats.Services
                     seed = lines[Array.IndexOf(lines, line) + 1].Trim();
                 }
             }
+            if (jwt != null && seed != null)
+                logger.Info("Credentials loaded successfully.");
+            else
+                logger.Warn("Credentials not found in creds file.");
 
-           
             return (jwt, seed);
         }
 
@@ -112,6 +115,7 @@ namespace ChatAppNats.Services
 
             var connection = new NatsConnection(opts);
             await connection.ConnectAsync();
+            logger.Info("NATS connection established to {0}", opts.Url);
             return connection;
         }
 
@@ -129,8 +133,11 @@ namespace ChatAppNats.Services
                 await foreach (var msg in _nats.SubscribeAsync<string>(Subject))
                 {
                     OnMessageReceived?.Invoke(msg.Data ?? string.Empty);
+
+                    logger.Info("Messsage received: {0}", msg.Data);    
                 }
             });
+            logger.Info("Subscribed to subject: {0}", Subject);
         }
 
 
@@ -142,6 +149,12 @@ namespace ChatAppNats.Services
             if (_nats != null && !string.IsNullOrWhiteSpace(message))
             {
                 await _nats.PublishAsync(Subject, message);
+
+                logger.Info("Message sent: {0}", message);
+            }
+            else
+            {
+                logger.Warn("Cannot send message. NATS connection is null or message is empty.");
             }
         }
     }

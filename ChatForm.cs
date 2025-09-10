@@ -1,5 +1,6 @@
 using ChatAppNats.Services;
 using NLog;
+using System.Threading.Tasks;
 namespace ChatAppNats
 {
     public partial class ChatForm : Form
@@ -52,7 +53,7 @@ namespace ChatAppNats
 
             if (!string.IsNullOrEmpty(message))
             {
-                await chatService.SendMessageAsync(msg);
+                await chatService.SendTextAsync(msg);
                 logger.Info("Message sent: " + msg);
                 txtMessage.Clear();
             }
@@ -62,6 +63,32 @@ namespace ChatAppNats
             }
         }
 
+        // Change the signature of btnSendFile_Click to match the expected EventHandler signature.
+        // It should return void, not Task.
 
+        private async void btnSendFile_Click(object sender, EventArgs e)
+        {
+
+            using (var openFileDialog = new OpenFileDialog())
+
+            {
+                openFileDialog.Title = "Select a file to send";
+                openFileDialog.Filter = "All Files (*.*)|*.*";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        await chatService.SendFileAsync(openFileDialog.FileName);
+                        MessageBox.Show("File sent successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error sending file : " + ex.Message, " Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        throw;
+                    }
+                }
+            }
+        }
     }
 }

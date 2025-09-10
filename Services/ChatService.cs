@@ -1,6 +1,9 @@
 ﻿using NATS.Client.Core;
 using System.Reflection;
 using NLog;
+using System.Text.Json;
+using ChatAppNats.Models;
+using System.Text;
 
 namespace ChatAppNats.Services
 {
@@ -132,9 +135,31 @@ namespace ChatAppNats.Services
             {
                 await foreach (var msg in _nats.SubscribeAsync<string>(Subject))
                 {
-                    OnMessageReceived?.Invoke(msg.Data ?? string.Empty);
+                    try
+                    {
+                        var chatMsg = JsonSerializer.Deserialize<ChatMessage>(msg.Data ?? string.Empty);
 
-                    logger.Info("Messsage received: {0}", msg.Data);    
+                        if (chatMsg != null)
+                        {
+                            if (chatMsg.Type == "text")
+                            {
+                                string text = Encoding.UTF8.GetString(chatMsg.Data);
+                                OnMessageReceived?.Invoke($"{text}");
+                                logger.Info("Text message received: {0}", text);
+                            }
+                            else if (chatMsg.Type == "file" && chatMsg.FileName != null)
+                            {
+                                string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), chatMsg.FileName);
+                                await File.WriteAllBytesAsync(filePath, chatMsg.Data);
+                                OnMessageReceived?.Invoke($"[File] Received file saved to Desktop: {chatMsg.FileName}");
+                                logger.Info("File message received and saved: {0}", chatMsg.FileName);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex, "Error processing received message.");
+                    }   
                 }
             });
             logger.Info("Subscribed to subject: {0}", Subject);
@@ -144,17 +169,58 @@ namespace ChatAppNats.Services
         //
         //This is the Method for sending the Messages to the UI
         //
-        public async Task SendMessageAsync(string message)
-        {
-            if (_nats != null && !string.IsNullOrWhiteSpace(message))
-            {
-                await _nats.PublishAsync(Subject, message);
+        //public async Task SendMessageAsync(string message)
+        //{
+        //    if (_nats != null && !string.IsNullOrWhiteSpace(message))
+        //    {
+        //        await _nats.PublishAsync(Subject, message);
 
-                logger.Info("Message sent: {0}", message);
+        //        logger.Info("Message sent: {0}", message);
+        //    }
+        //    else
+        //    {
+        //        logger.Warn("Cannot send message. NATS connection is null or message is empty.");
+        //    }
+        //}
+
+
+        public async Task SendTextAsync(string message)
+        {
+            if(_nats != null && !string.IsNullOrWhiteSpace(message))
+            {
+                var chatMsg = new ChatMessage
+                {
+                    Type = "text",
+                    Data = Encoding.UTF8.GetBytes(message)
+                };
+
+                var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
+                await _nats.PublishAsync(Subject, payload);
+
+                logger.Info("Text message sent: {0}", message);
+            }
+        }
+
+
+        public async Task SendFileAsync(string filePath)
+        {
+            if(_nats != null && File.Exists(filePath))
+            {   
+                var chatMsg = new ChatMessage
+                {
+                    Type = "file",
+                    FileName = Path.GetFileName(filePath),
+                    Data = await File.ReadAllBytesAsync(filePath)
+                };
+
+                var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
+                await _nats.PublishAsync(Subject, payload);
+                
+                logger.Info("File message sent: {0}", chatMsg.FileName);
             }
             else
             {
-                logger.Warn("Cannot send message. NATS connection is null or message is empty.");
+                logger.Warn("Cannot send file. NATS connection is null or file does not exist: {0}", filePath);
             }
         }
     }

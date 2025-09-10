@@ -32,14 +32,25 @@ namespace ChatAppNats
 
         public void AppendMessage(string message)
         {
-            if (listBox1.InvokeRequired)
+            Label labelMessage = new Label
             {
-                listBox1.Invoke(new Action(() => listBox1.Items.Add(message)));
+                Text = message,
+                AutoSize = true,
+                MaximumSize = new Size(250, 0),
+                Font = new Font("Arial", 10),
+                Padding = new Padding(5),
+                Margin = new Padding(5),
+                BackColor = Color.LightGray,
+                BorderStyle = BorderStyle.None
+            };
+            if (showMessageLayoutPanel.InvokeRequired)
+            {
+                showMessageLayoutPanel.Invoke(new Action(() => showMessageLayoutPanel.Controls.Add(labelMessage)));
                 logger.Info("Message appended via Invoke: " + message);
             }
             else
             {
-                listBox1.Items.Add(message);
+                showMessageLayoutPanel.Controls.Add(labelMessage);
                 logger.Info("Message appended directly: " + message);
             }
         }

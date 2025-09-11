@@ -1,16 +1,18 @@
-﻿using NATS.Client.Core;
-using System.Reflection;
+﻿using ChatAppNats.Models;
+using NATS.Client.Core;
 using NLog;
-using System.Text.Json;
-using ChatAppNats.Models;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace ChatAppNats.Services
 {
-    public class ChatService
+    public class ChatService : IDisposable, IAsyncDisposable
     {
         private NatsConnection? _nats;
         private const string Subject = "chat.room1";
+        private CancellationTokenSource? _cts;
 
         // NLog Logger
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -31,7 +33,7 @@ namespace ChatAppNats.Services
                 if (jwt == null || seed == null)
                 {
                     OnStatusChanged?.Invoke("Invalid .creds file format.");
-                    return ;
+                    return;
                 }
 
 
@@ -39,7 +41,7 @@ namespace ChatAppNats.Services
                 _nats = await CreateConnectionAsync(jwt, seed);
 
                 // 3. Subscribe to Messages
-                SubscribeToMessage();
+                await SubscribeToMessageAsync();
 
 
                 OnStatusChanged?.Invoke("Connected to NATS server");
@@ -66,7 +68,7 @@ namespace ChatAppNats.Services
             if (stream == null)
             {
                 OnStatusChanged?.Invoke("Could not find embedded resource: " + resourceName);
-                return(null,null);
+                return (null, null);
             }
 
             using var reader = new StreamReader(stream);
@@ -127,41 +129,61 @@ namespace ChatAppNats.Services
         //
         //Subscribe to the chat subject and raises OnMessageReceived
         //
-        private void SubscribeToMessage()
+        private async Task SubscribeToMessageAsync()
         {
             if (_nats == null) return;
+            _cts = new CancellationTokenSource();
 
             _ = Task.Run(async () =>
             {
-                await foreach (var msg in _nats.SubscribeAsync<string>(Subject))
+                try
                 {
-                    try
+                    await foreach (var msg in _nats.SubscribeAsync<byte[]>(Subject).WithCancellation(_cts.Token))
                     {
-                        var chatMsg = JsonSerializer.Deserialize<ChatMessage>(msg.Data ?? string.Empty);
-
-                        if (chatMsg != null)
+                        try
                         {
-                            if (chatMsg.Type == "text")
+                            var chatMsg = JsonSerializer.Deserialize<ChatMessage>(msg.Data ?? Array.Empty<byte>());
+                            if (chatMsg != null)
                             {
-                                string text = Encoding.UTF8.GetString(chatMsg.Data);
-                                OnMessageReceived?.Invoke($"{text}");
-                                logger.Info("Text message received: {0}", text);
-                            }
-                            else if (chatMsg.Type == "file" && chatMsg.FileName != null)
-                            {
-                                string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), chatMsg.FileName);
-                                await File.WriteAllBytesAsync(filePath, chatMsg.Data);
-                                OnMessageReceived?.Invoke($"[File] Received file saved to Desktop: {chatMsg.FileName}");
-                                logger.Info("File message received and saved: {0}", chatMsg.FileName);
+                                if (chatMsg.Type == "text" && chatMsg.UserName != null && chatMsg.Data != null)
+                                {
+                                    string text = Encoding.UTF8.GetString(chatMsg.Data);
+                                    OnMessageReceived?.Invoke($"{chatMsg.UserName}: {text}");
+                                    logger.Info("Text message received: {0}", text);
+                                }
+                                else if (chatMsg.Type == "file" && chatMsg.FileName != null && chatMsg.Data != null && chatMsg.Data.Length > 0)
+                                {
+                                    string fileName = chatMsg.FileName;
+                                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                                    string filePath = Path.Combine(desktopPath, fileName);
+                                    await File.WriteAllBytesAsync(filePath, chatMsg.Data);
+                                    OnMessageReceived?.Invoke($"[File] Received file saved to Desktop: {fileName}");
+                                    logger.Info("File message received and saved: {0}", fileName);
+                                }
+                                else
+                                {
+                                    logger.Warn("Received message with invalid or empty data/type.");
+                                }
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex, "Error processing received message.");
+                            OnStatusChanged?.Invoke($"Error processing message: {ex.Message}");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, "Error processing received message.");
-                    }   
+                }
+                catch (OperationCanceledException)
+                {
+                    logger.Info("Subscription cancelled.");
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "An error occurred in the subscription loop.");
                 }
             });
+                
+               
             logger.Info("Subscribed to subject: {0}", Subject);
         }
 
@@ -184,13 +206,14 @@ namespace ChatAppNats.Services
         //}
 
 
-        public async Task SendTextAsync(string message)
+        public async Task SendTextAsync(string userName, string message)
         {
-            if(_nats != null && !string.IsNullOrWhiteSpace(message))
+            if (_nats != null && !string.IsNullOrWhiteSpace(message))
             {
                 var chatMsg = new ChatMessage
                 {
                     Type = "text",
+                    UserName = userName,
                     Data = Encoding.UTF8.GetBytes(message)
                 };
 
@@ -202,26 +225,63 @@ namespace ChatAppNats.Services
         }
 
 
-        public async Task SendFileAsync(string filePath)
+        public async Task SendFileAsync(string userName, string filePath)
         {
-            if(_nats != null && File.Exists(filePath))
-            {   
-                var chatMsg = new ChatMessage
+            if (_nats != null && File.Exists(filePath))
+            {
+                try
                 {
-                    Type = "file",
-                    FileName = Path.GetFileName(filePath),
-                    Data = await File.ReadAllBytesAsync(filePath)
-                };
+                    var fileBytes = await File.ReadAllBytesAsync(filePath);
+                    var chatMsg = new ChatMessage
+                    {
+                        Type = "file",
+                        UserName = userName,
+                        FileName = Path.GetFileName(filePath),
+                        Data = fileBytes
+                    };
 
-                var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
-                await _nats.PublishAsync(Subject, payload);
-                
-                logger.Info("File message sent: {0}", chatMsg.FileName);
+                    var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
+                    await _nats.PublishAsync(Subject, payload);
+
+                    logger.Info("File message sent: {0}", chatMsg.FileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Failed to read file for sending: {0}", filePath);
+                    OnStatusChanged?.Invoke($"Error sending file: {ex.Message}");
+                }
             }
             else
             {
                 logger.Warn("Cannot send file. NATS connection is null or file does not exist: {0}", filePath);
+                OnStatusChanged?.Invoke("Error: File not found or NATS not connected.");
             }
+        }
+
+
+        public async Task Disconnect()
+        {
+            _cts?.Cancel();
+            if (_nats != null)
+            {
+                await _nats.DisposeAsync();
+                logger.Info("NATS connection disposed.");
+            }
+        }
+
+
+        // used to free up resources when the object is no longer used 
+        // for synchronous method
+        public void Dispose()
+        {
+            Disconnect().Wait();
+        }
+
+        
+        // for asynchronous methods
+        public async ValueTask DisposeAsync()
+        {
+            await Disconnect();
         }
     }
 }

@@ -1,6 +1,7 @@
-using ChatAppNats.Services;
+﻿using ChatAppNats.Services;
 using NLog;
 using System.Threading.Tasks;
+
 namespace ChatAppNats
 {
     public partial class ChatForm : Form
@@ -15,6 +16,7 @@ namespace ChatAppNats
         {
             InitializeComponent();
             this.userName = userName;
+            this.Text = $"Chat App - {userName}"; // Set form title
 
             chatService = new ChatService();
 
@@ -29,28 +31,39 @@ namespace ChatAppNats
         }
 
 
+        private async void ChatForm_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (chatService != null)
+            {
+                await chatService.Disconnect();
+            }
+        }
+
+
 
         public void AppendMessage(string message)
         {
-            Label labelMessage = new Label
-            {
-                Text = message,
-                AutoSize = true,
-                MaximumSize = new Size(250, 0),
-                Font = new Font("Arial", 10),
-                Padding = new Padding(5),
-                Margin = new Padding(5),
-                BackColor = Color.LightGray,
-                BorderStyle = BorderStyle.None
-            };
             if (showMessageLayoutPanel.InvokeRequired)
             {
-                showMessageLayoutPanel.Invoke(new Action(() => showMessageLayoutPanel.Controls.Add(labelMessage)));
+                showMessageLayoutPanel.Invoke(new Action(() => AppendMessage(message)));
                 logger.Info("Message appended via Invoke: " + message);
             }
             else
             {
+                Label labelMessage = new Label
+                {
+                    Text = message,
+                    AutoSize = true,
+                    MaximumSize = new Size(250, 0),
+                    Font = new Font("Arial", 10),
+                    Padding = new Padding(5),
+                    Margin = new Padding(5),
+                    BackColor = Color.LightGray,
+                    BorderStyle = BorderStyle.None
+                };
+
                 showMessageLayoutPanel.Controls.Add(labelMessage);
+                showMessageLayoutPanel.ScrollControlIntoView(labelMessage);
                 logger.Info("Message appended directly: " + message);
             }
         }
@@ -60,11 +73,11 @@ namespace ChatAppNats
         private async void btnSend_Click(object sender, EventArgs e)
         {
             string message = txtMessage.Text.Trim();
-            string msg = $"{userName}: {message}";
+            string msg = $"{message}";
 
             if (!string.IsNullOrEmpty(message))
             {
-                await chatService.SendTextAsync(msg);
+                await chatService.SendTextAsync(userName,msg);
                 logger.Info("Message sent: " + msg);
                 txtMessage.Clear();
             }
@@ -90,7 +103,7 @@ namespace ChatAppNats
                 {
                     try
                     {
-                        await chatService.SendFileAsync(openFileDialog.FileName);
+                        await chatService.SendFileAsync(userName,openFileDialog.FileName);
                         MessageBox.Show("File sent successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     catch (Exception ex)

@@ -1,6 +1,6 @@
 ﻿using ChatAppNats.Models;
 using NATS.Client.Core;
-using NLog;
+using Serilog;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -14,8 +14,7 @@ namespace ChatAppNats.Services
         private const string Subject = "chat.room1";
         private CancellationTokenSource? _cts;
 
-        // NLog Logger
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
 
         public event Action<string>? OnMessageReceived;
         public event Action<string>? OnStatusChanged;
@@ -25,7 +24,7 @@ namespace ChatAppNats.Services
         {
             try
             {
-                logger.Info("Attempting to connect to NATS server...");
+                Log.Information("Attempting to connect to NATS server...");
                 //
                 // 1. Load the JWT and Seed from Credentials
                 //
@@ -45,12 +44,12 @@ namespace ChatAppNats.Services
 
 
                 OnStatusChanged?.Invoke("Connected to NATS server");
-                logger.Info("Connected to NATS server successfully.");
+                Log.Information("Connected to NATS server successfully.");
             }
             catch (Exception ex)
             {
                 OnStatusChanged?.Invoke("Connection Failed: " + ex.Message);
-                logger.Error(ex, "Failed to connect to NATS server.");
+                Log.Error(ex, "Failed to connect to NATS server.");
             }
         }
 
@@ -94,9 +93,9 @@ namespace ChatAppNats.Services
                 }
             }
             if (jwt != null && seed != null)
-                logger.Info("Credentials loaded successfully.");
+                Log.Information("Credentials loaded successfully.");
             else
-                logger.Warn("Credentials not found in creds file.");
+                Log.Warning("Credentials not found in creds file.");
 
             return (jwt, seed);
         }
@@ -120,7 +119,7 @@ namespace ChatAppNats.Services
 
             var connection = new NatsConnection(opts);
             await connection.ConnectAsync();
-            logger.Info("NATS connection established to {0}", opts.Url);
+            Log.Information("NATS connection established to {0}", opts.Url);
             return connection;
         }
 
@@ -149,7 +148,7 @@ namespace ChatAppNats.Services
                                 {
                                     string text = Encoding.UTF8.GetString(chatMsg.Data);
                                     OnMessageReceived?.Invoke($"{chatMsg.UserName}: {text}");
-                                    logger.Info("Text message received: {0}", text);
+                                    Log.Information("Text message received: {0}", text);
                                 }
                                 else if (chatMsg.Type == "file" && chatMsg.FileName != null && chatMsg.Data != null && chatMsg.Data.Length > 0)
                                 {
@@ -158,33 +157,33 @@ namespace ChatAppNats.Services
                                     string filePath = Path.Combine(desktopPath, fileName);
                                     await File.WriteAllBytesAsync(filePath, chatMsg.Data);
                                     OnMessageReceived?.Invoke($"[File] Received file saved to Desktop: {fileName}");
-                                    logger.Info("File message received and saved: {0}", fileName);
+                                    Log.Information("File message received and saved: {0}", fileName);
                                 }
                                 else
                                 {
-                                    logger.Warn("Received message with invalid or empty data/type.");
+                                    Log.Warning("Received message with invalid or empty data/type.");
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            logger.Error(ex, "Error processing received message.");
+                            Log.Error(ex, "Error processing received message.");
                             OnStatusChanged?.Invoke($"Error processing message: {ex.Message}");
                         }
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    logger.Info("Subscription cancelled.");
+                    Log.Information("Subscription cancelled.");
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "An error occurred in the subscription loop.");
+                    Log.Error(ex, "An error occurred in the subscription loop.");
                 }
             });
                 
                
-            logger.Info("Subscribed to subject: {0}", Subject);
+            Log.Information("Subscribed to subject: {0}", Subject);
         }
 
 
@@ -220,7 +219,7 @@ namespace ChatAppNats.Services
                 var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
                 await _nats.PublishAsync(Subject, payload);
 
-                logger.Info("Text message sent: {0}", message);
+                Log.Information("Text message sent: {0}", message);
             }
         }
 
@@ -243,17 +242,17 @@ namespace ChatAppNats.Services
                     var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
                     await _nats.PublishAsync(Subject, payload);
 
-                    logger.Info("File message sent: {0}", chatMsg.FileName);
+                    Log.Information("File message sent: {0}", chatMsg.FileName);
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, "Failed to read file for sending: {0}", filePath);
+                    Log.Error(ex, "Failed to read file for sending: {0}", filePath);
                     OnStatusChanged?.Invoke($"Error sending file: {ex.Message}");
                 }
             }
             else
             {
-                logger.Warn("Cannot send file. NATS connection is null or file does not exist: {0}", filePath);
+                Log.Warning("Cannot send file. NATS connection is null or file does not exist: {0}", filePath);
                 OnStatusChanged?.Invoke("Error: File not found or NATS not connected.");
             }
         }
@@ -265,7 +264,7 @@ namespace ChatAppNats.Services
             if (_nats != null)
             {
                 await _nats.DisposeAsync();
-                logger.Info("NATS connection disposed.");
+                Log.Information("NATS connection disposed.");
             }
         }
 

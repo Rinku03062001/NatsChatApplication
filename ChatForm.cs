@@ -1,13 +1,11 @@
 ﻿using ChatAppNats.Services;
-using NLog;
+using Serilog;
 using System.Threading.Tasks;
 
 namespace ChatAppNats
 {
     public partial class ChatForm : Form
     {
-        //NLog Logger
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         ChatService chatService;
         private readonly string userName;
@@ -27,7 +25,7 @@ namespace ChatAppNats
             // await Connect
             _ = chatService.ConnectToNats();
 
-            logger.Info("ChatForm initialized for user: " + userName);
+            Log.Information("ChatForm initialized for user: " + userName);
         }
 
 
@@ -46,7 +44,7 @@ namespace ChatAppNats
             if (showMessageLayoutPanel.InvokeRequired)
             {
                 showMessageLayoutPanel.Invoke(new Action(() => AppendMessage(message)));
-                logger.Info("Message appended via Invoke: " + message);
+                Log.Information("Message appended via Invoke: " + message);
             }
             else
             {
@@ -64,7 +62,7 @@ namespace ChatAppNats
 
                 showMessageLayoutPanel.Controls.Add(labelMessage);
                 showMessageLayoutPanel.ScrollControlIntoView(labelMessage);
-                logger.Info("Message appended directly: " + message);
+                Log.Information("Message appended directly: " + message);
             }
         }
 
@@ -73,17 +71,25 @@ namespace ChatAppNats
         private async void btnSend_Click(object sender, EventArgs e)
         {
             string message = txtMessage.Text.Trim();
-            string msg = $"{message}";
-
             if (!string.IsNullOrEmpty(message))
             {
-                await chatService.SendTextAsync(userName,msg);
-                logger.Info("Message sent: " + msg);
-                txtMessage.Clear();
+                // Disable the button to prevent duplicate clicks
+                btnSend.Enabled = false;
+                try
+                {
+                    await chatService.SendTextAsync(userName, message);
+                    Log.Information("Message sent: " + message);
+                    txtMessage.Clear();
+                }
+                finally
+                {
+                    // Re-enable the button regardless of success or failure
+                    btnSend.Enabled = true;
+                }
             }
             else
             {
-                logger.Warn("Attempted to send empty message.");
+                Log.Warning("Attempted to send empty message.");
             }
         }
 
@@ -92,9 +98,7 @@ namespace ChatAppNats
 
         private async void btnSendFile_Click(object sender, EventArgs e)
         {
-
             using (var openFileDialog = new OpenFileDialog())
-
             {
                 openFileDialog.Title = "Select a file to send";
                 openFileDialog.Filter = "All Files (*.*)|*.*";
@@ -103,13 +107,21 @@ namespace ChatAppNats
                 {
                     try
                     {
-                        await chatService.SendFileAsync(userName,openFileDialog.FileName);
-                        MessageBox.Show("File sent successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        // Disable the button to prevent duplicate clicks
+                        btnSendFile.Enabled = false;
+                        await chatService.SendFileAsync(userName, openFileDialog.FileName);
+                        MessageBox.Show("File send initiated. Check log for status.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        Log.Information("File send initiated: " + openFileDialog.FileName);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error sending file : " + ex.Message, " Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        throw;
+                        MessageBox.Show("Error preparing file for send: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Log.Error(ex, "Error preparing file for send: " + openFileDialog.FileName);
+                    }
+                    finally
+                    {
+                        // Re-enable the button
+                        btnSendFile.Enabled = true;
                     }
                 }
             }

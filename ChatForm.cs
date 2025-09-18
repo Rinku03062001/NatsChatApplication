@@ -1,130 +1,102 @@
 ﻿using ChatAppNats.Services;
 using Serilog;
-using System.Threading.Tasks;
+using System;
+using System.Windows.Forms;
 
 namespace ChatAppNats
 {
     public partial class ChatForm : Form
     {
+        private readonly ChatService _chatPublisher;
+        private readonly ILogger _logger;
+        private readonly string _userName;
+        private readonly string _targetUser;
 
-        ChatService chatService;
-        private readonly string userName;
-
-        public ChatForm(string userName)
+        public ChatForm(string userName, string targetUser = null, ILogger logger = null)
         {
             InitializeComponent();
-            this.userName = userName;
-            this.Text = $"Chat App - {userName}"; // Set form title
 
-            chatService = new ChatService();
+            _userName = userName ?? "Unknown";
+            _targetUser = targetUser ?? "Unknown";
+            Text = $"Synapse - {_userName}";
 
-            // subscribe to service events
-            chatService.OnMessageReceived += AppendMessage;
-            chatService.OnStatusChanged += AppendMessage;
+            _logger = logger ?? Log.Logger;
 
-            // await Connect
-            _ = chatService.ConnectToNats();
+            _logger.Information("Opening ChatForm for User={User}, Target={Target}", _userName, _targetUser);
 
-            Log.Information("ChatForm initialized for user: " + userName);
-        }
-
-
-        private async void ChatForm_FormClosing(object? sender, FormClosingEventArgs e)
-        {
-            if (chatService != null)
+            try
             {
-                await chatService.Disconnect();
+                _chatPublisher = new ChatService(_userName, _targetUser, _logger);
+                _chatPublisher.Subscribe(OnMessageReceived);
+                _logger.Information("ChatService subscription started for {User}", _userName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Failed to initialize ChatService in ChatForm for {User}", _userName);
+                MessageBox.Show("Failed to connect to chat service. Please check logs.");
             }
         }
-
-
-
-        public void AppendMessage(string message)
-        {
-            if (showMessageLayoutPanel.InvokeRequired)
-            {
-                showMessageLayoutPanel.Invoke(new Action(() => AppendMessage(message)));
-                Log.Information("Message appended via Invoke: " + message);
-            }
-            else
-            {
-                Label labelMessage = new Label
-                {
-                    Text = message,
-                    AutoSize = true,
-                    MaximumSize = new Size(250, 0),
-                    Font = new Font("Arial", 10),
-                    Padding = new Padding(5),
-                    Margin = new Padding(5),
-                    BackColor = Color.LightGray,
-                    BorderStyle = BorderStyle.None
-                };
-
-                showMessageLayoutPanel.Controls.Add(labelMessage);
-                showMessageLayoutPanel.ScrollControlIntoView(labelMessage);
-                Log.Information("Message appended directly: " + message);
-            }
-        }
-
-
 
         private async void btnSend_Click(object sender, EventArgs e)
         {
             string message = txtMessage.Text.Trim();
+
             if (!string.IsNullOrEmpty(message))
             {
-                // Disable the button to prevent duplicate clicks
-                btnSend.Enabled = false;
                 try
                 {
-                    await chatService.SendTextAsync(userName, message);
-                    Log.Information("Message sent: " + message);
+                    string fullMessage = $"{_userName}: {message}";
+                    await _chatPublisher.PublishMessageAsync(fullMessage);
+
+                    lstLogs.Items.Add($"Me: {message}");
+                    _logger.Information("User {User} sent message='{Message}' to {Target}", _userName, message, _targetUser);
+
                     txtMessage.Clear();
                 }
-                finally
+                catch (Exception ex)
                 {
-                    // Re-enable the button regardless of success or failure
-                    btnSend.Enabled = true;
+                    _logger.Error(ex, "Error sending message from {User} to {Target}", _userName, _targetUser);
+                    MessageBox.Show($"Error sending message: {ex.Message}");
                 }
             }
             else
             {
-                Log.Warning("Attempted to send empty message.");
+                _logger.Warning("Send button clicked by {User}, but message was empty", _userName);
             }
         }
 
-        // Change the signature of btnSendFile_Click to match the expected EventHandler signature.
-        // It should return void, not Task.
-
-        private async void btnSendFile_Click(object sender, EventArgs e)
+        private void OnMessageReceived(string message)
         {
-            using (var openFileDialog = new OpenFileDialog())
+            try
             {
-                openFileDialog.Title = "Select a file to send";
-                openFileDialog.Filter = "All Files (*.*)|*.*";
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                if (lstLogs.InvokeRequired)
                 {
-                    try
-                    {
-                        // Disable the button to prevent duplicate clicks
-                        btnSendFile.Enabled = false;
-                        await chatService.SendFileAsync(userName, openFileDialog.FileName);
-                        MessageBox.Show("File send initiated. Check log for status.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        Log.Information("File send initiated: " + openFileDialog.FileName);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error preparing file for send: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Log.Error(ex, "Error preparing file for send: " + openFileDialog.FileName);
-                    }
-                    finally
-                    {
-                        // Re-enable the button
-                        btnSendFile.Enabled = true;
-                    }
+                    lstLogs.Invoke(new Action(() => lstLogs.Items.Add(message)));
                 }
+                else
+                {
+                    lstLogs.Items.Add(message);
+                }
+
+                _logger.Information("User {User} received message='{Message}'", _userName, message);
             }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error processing received message in ChatForm for {User}", _userName);
+            }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            _logger.Information("Closing ChatForm for {User}", _userName);
+            _chatPublisher?.Dispose();
+            base.OnFormClosing(e);
+        }
+
+        private void splitContainer1_Panel2_Paint(object sender, PaintEventArgs e)
+        {
+            // Optional: Add log for debugging UI paint calls if needed
+            //_logger.Debug("Redrawing Panel2 for {User}", _userName);
         }
     }
 }

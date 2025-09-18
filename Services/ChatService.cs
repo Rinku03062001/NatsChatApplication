@@ -1,286 +1,178 @@
-﻿using ChatAppNats.Models;
-using NATS.Client.Core;
+﻿using NATS.Client;
+using NATS.Client.JetStream;
 using Serilog;
-using System.Reflection;
+using System;
 using System.Text;
-using System.Text.Json;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ChatAppNats.Services
 {
-    public class ChatService : IDisposable, IAsyncDisposable
+    public class ChatService : IDisposable
     {
-        private NatsConnection? _nats;
-        private const string Subject = "chat.room1";
-        private CancellationTokenSource? _cts;
+        private readonly IConnection _connection;
+        private readonly IJetStream _js;
+        private readonly IJetStreamManagement _jsm;
+        private const string StreamName = "Synapse_Publisher";
 
-        
+        private readonly string _userName;
+        private readonly string _subjectToPublish;
+        private readonly string _subjectToSubscribe;
+        private readonly string _durableName;
 
-        public event Action<string>? OnMessageReceived;
-        public event Action<string>? OnStatusChanged;
+        private readonly ILogger _logger;
 
-
-        public async Task ConnectToNats()
+        public ChatService(string userName, string targetUser, ILogger logger = null)
         {
+            _logger = logger ?? Log.Logger; // use global logger if not injected
+
+            _userName = userName;
+            _subjectToPublish = $"Synapse_Publisher.{userName}";
+            _subjectToSubscribe = $"Synapse_Publisher.{targetUser}";
+            _durableName = $"chat_consumer_{userName}";
+
+            _logger.Information("Initializing ChatService for {User}, target={Target}, publish={Publish}, subscribe={Subscribe}, durable={Durable}",
+                _userName, targetUser, _subjectToPublish, _subjectToSubscribe, _durableName);
+
             try
             {
-                Log.Information("Attempting to connect to NATS server...");
-                //
-                // 1. Load the JWT and Seed from Credentials
-                //
-                var (jwt, seed) = LoadCreds();
-                if (jwt == null || seed == null)
+                ConnectionFactory cf = new ConnectionFactory();
+                Options opts = ConnectionFactory.GetDefaultOptions();
+
+                opts.Url = "tls://connect.ngs.global:4222";
+                opts.SetUserCredentials(@"D:\C# Project\NATS Project\JetStreamDemo\Publisher\NGS-ChatApp-Rinku-User.creds");
+                opts.Name = $"Chat Publisher - {_userName}";
+                opts.Secure = true;
+                opts.TLSRemoteCertificationValidationCallback = (sender, certificate, chain, errors) => true;
+
+                _connection = cf.CreateConnection(opts);
+                _js = _connection.CreateJetStreamContext();
+                _jsm = _connection.CreateJetStreamManagementContext();
+
+                _logger.Information("Connected to NATS successfully as {User}", _userName);
+
+                var streamConfig = StreamConfiguration.Builder()
+                    .WithName(StreamName)
+                    .WithSubjects("Synapse_Publisher.*")
+                    .WithMaxBytes(1024 * 1024 * 1024)
+                    .Build();
+
+                try
                 {
-                    OnStatusChanged?.Invoke("Invalid .creds file format.");
-                    return;
+                    _jsm.GetStreamInfo(StreamName);
+                    _logger.Debug("Stream {StreamName} already exists", StreamName);
                 }
-
-
-                // 2. Create NATS Connection
-                _nats = await CreateConnectionAsync(jwt, seed);
-
-                // 3. Subscribe to Messages
-                await SubscribeToMessageAsync();
-
-
-                OnStatusChanged?.Invoke("Connected to NATS server");
-                Log.Information("Connected to NATS server successfully.");
+                catch (NATSJetStreamException)
+                {
+                    _jsm.AddStream(streamConfig);
+                    _logger.Information("Stream {StreamName} created", StreamName);
+                }
             }
             catch (Exception ex)
             {
-                OnStatusChanged?.Invoke("Connection Failed: " + ex.Message);
-                Log.Error(ex, "Failed to connect to NATS server.");
+                _logger.Error(ex, "Failed to initialize ChatService for {User}", _userName);
+                throw;
             }
         }
 
-
-
-        //
-        //Loads JWT and Seed from embedded .creds file
-        //
-        private (string? jwt, string? seed) LoadCreds()
+        // Publisher
+        public async Task PublishMessageAsync(string message)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            string resourceName = assembly.GetName().Name + ".NGS-ChatApp-Rinku-User.creds";
-
-            using var stream = assembly.GetManifestResourceStream(resourceName);
-            if (stream == null)
+            try
             {
-                OnStatusChanged?.Invoke("Could not find embedded resource: " + resourceName);
-                return (null, null);
-            }
+                var msg = new Msg(_subjectToPublish, Encoding.UTF8.GetBytes(message));
+                var ack = await _js.PublishAsync(msg);
 
-            using var reader = new StreamReader(stream);
-            string credsContent = reader.ReadToEnd();
-
-
-            //
-            // Parse creds
-            //
-            var lines = credsContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            string? jwt = null, seed = null;
-
-            foreach (var line in lines)
-            {
-                if (line.StartsWith("-----BEGIN NATS USER JWT-----"))
+                if (ack != null)
                 {
-                    jwt = lines[Array.IndexOf(lines, line) + 1].Trim();
+                    _logger.Information("Message published by {User} to {Subject}, seq={Seq}, text={Message}",
+                        _userName, _subjectToPublish, ack.Seq, message);
                 }
-                if (line.StartsWith("-----BEGIN USER NKEY SEED-----"))
+                else
                 {
-                    seed = lines[Array.IndexOf(lines, line) + 1].Trim();
+                    _logger.Warning("Publish failed by {User} to {Subject}, text={Message}",
+                        _userName, _subjectToPublish, message);
                 }
             }
-            if (jwt != null && seed != null)
-                Log.Information("Credentials loaded successfully.");
-            else
-                Log.Warning("Credentials not found in creds file.");
-
-            return (jwt, seed);
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error publishing message by {User} to {Subject}, text={Message}",
+                    _userName, _subjectToPublish, message);
+            }
         }
 
-
-
-        //
-        //Creates and Connects to the NATS Server
-        //
-        private async Task<NatsConnection> CreateConnectionAsync(string jwt, string seed)
+        // Subscriber
+        public void Subscribe(Action<string> onMessage)
         {
-            var opts = NatsOpts.Default with
+            _logger.Information("Setting up subscriber for {User}, subject={Subject}, durable={Durable}",
+                _userName, _subjectToSubscribe, _durableName);
+
+            var consumerConfig = ConsumerConfiguration.Builder()
+                .WithFilterSubject(_subjectToSubscribe)
+                .WithDurable(_durableName)
+                .WithDeliverPolicy(DeliverPolicy.All)
+                .WithAckPolicy(AckPolicy.Explicit)
+                .Build();
+
+            try
             {
-                Url = "nats://connect.ngs.global:4222",
-                AuthOpts = new NatsAuthOpts
-                {
-                    Jwt = jwt,
-                    Seed = seed
-                }
-            };
-
-            var connection = new NatsConnection(opts);
-            await connection.ConnectAsync();
-            Log.Information("NATS connection established to {0}", opts.Url);
-            return connection;
-        }
-
-
-
-        //
-        //Subscribe to the chat subject and raises OnMessageReceived
-        //
-        private async Task SubscribeToMessageAsync()
-        {
-            if (_nats == null) return;
-            _cts = new CancellationTokenSource();
-
-            _ = Task.Run(async () =>
+                _jsm.AddOrUpdateConsumer(StreamName, consumerConfig);
+                _logger.Debug("Consumer durable {Durable} configured", _durableName);
+            }
+            catch (NATSJetStreamException ex)
             {
-                try
+                _logger.Error(ex, "Consumer setup failed for durable {Durable}", _durableName);
+            }
+
+            PullSubscribeOptions pso = PullSubscribeOptions.BindTo(StreamName, _durableName);
+
+            try
+            {
+                var sub = _js.PullSubscribe(_subjectToSubscribe, pso);
+                _logger.Information("Subscribed successfully to {Subject} with durable {Durable}",
+                    _subjectToSubscribe, _durableName);
+
+                Task.Run(async () =>
                 {
-                    await foreach (var msg in _nats.SubscribeAsync<byte[]>(Subject).WithCancellation(_cts.Token))
+                    while (true)
                     {
                         try
                         {
-                            var chatMsg = JsonSerializer.Deserialize<ChatMessage>(msg.Data ?? Array.Empty<byte>());
-                            if (chatMsg != null)
+                            var messages = sub.Fetch(10, 1000);
+                            foreach (var msg in messages)
                             {
-                                if (chatMsg.Type == "text" && chatMsg.UserName != null && chatMsg.Data != null)
+                                var text = Encoding.UTF8.GetString(msg.Data);
+                                _logger.Information("User {User} received message='{Message}' from subject={Subject}",
+                                    _userName, text, _subjectToSubscribe);
+
+                                msg.Ack();
+
+                                if (onMessage != null && Application.OpenForms.Count > 0)
                                 {
-                                    string text = Encoding.UTF8.GetString(chatMsg.Data);
-                                    OnMessageReceived?.Invoke($"{chatMsg.UserName}: {text}");
-                                    Log.Information("Text message received: {0}", text);
-                                }
-                                else if (chatMsg.Type == "file" && chatMsg.FileName != null && chatMsg.Data != null && chatMsg.Data.Length > 0)
-                                {
-                                    string fileName = chatMsg.FileName;
-                                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                                    string filePath = Path.Combine(desktopPath, fileName);
-                                    await File.WriteAllBytesAsync(filePath, chatMsg.Data);
-                                    OnMessageReceived?.Invoke($"[File] Received file saved to Desktop: {fileName}");
-                                    Log.Information("File message received and saved: {0}", fileName);
-                                }
-                                else
-                                {
-                                    Log.Warning("Received message with invalid or empty data/type.");
+                                    var form = Application.OpenForms[0];
+                                    form.Invoke(() => onMessage(text));
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            Log.Error(ex, "Error processing received message.");
-                            OnStatusChanged?.Invoke($"Error processing message: {ex.Message}");
+                            _logger.Error(ex, "Error pulling messages for {User}", _userName);
                         }
+                        await Task.Delay(500);
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                    Log.Information("Subscription cancelled.");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "An error occurred in the subscription loop.");
-                }
-            });
-                
-               
-            Log.Information("Subscribed to subject: {0}", Subject);
-        }
-
-
-        //
-        //This is the Method for sending the Messages to the UI
-        //
-        //public async Task SendMessageAsync(string message)
-        //{
-        //    if (_nats != null && !string.IsNullOrWhiteSpace(message))
-        //    {
-        //        await _nats.PublishAsync(Subject, message);
-
-        //        logger.Info("Message sent: {0}", message);
-        //    }
-        //    else
-        //    {
-        //        logger.Warn("Cannot send message. NATS connection is null or message is empty.");
-        //    }
-        //}
-
-
-        public async Task SendTextAsync(string userName, string message)
-        {
-            if (_nats != null && !string.IsNullOrWhiteSpace(message))
+                });
+            }
+            catch (Exception ex)
             {
-                var chatMsg = new ChatMessage
-                {
-                    Type = "text",
-                    UserName = userName,
-                    Data = Encoding.UTF8.GetBytes(message)
-                };
-
-                var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
-                await _nats.PublishAsync(Subject, payload);
-
-                Log.Information("Text message sent: {0}", message);
+                _logger.Error(ex, "Subscribe failed for {User} on subject {Subject}",
+                    _userName, _subjectToSubscribe);
             }
         }
 
-
-        public async Task SendFileAsync(string userName, string filePath)
-        {
-            if (_nats != null && File.Exists(filePath))
-            {
-                try
-                {
-                    var fileBytes = await File.ReadAllBytesAsync(filePath);
-                    var chatMsg = new ChatMessage
-                    {
-                        Type = "file",
-                        UserName = userName,
-                        FileName = Path.GetFileName(filePath),
-                        Data = fileBytes
-                    };
-
-                    var payload = JsonSerializer.SerializeToUtf8Bytes(chatMsg);
-                    await _nats.PublishAsync(Subject, payload);
-
-                    Log.Information("File message sent: {0}", chatMsg.FileName);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Failed to read file for sending: {0}", filePath);
-                    OnStatusChanged?.Invoke($"Error sending file: {ex.Message}");
-                }
-            }
-            else
-            {
-                Log.Warning("Cannot send file. NATS connection is null or file does not exist: {0}", filePath);
-                OnStatusChanged?.Invoke("Error: File not found or NATS not connected.");
-            }
-        }
-
-
-        public async Task Disconnect()
-        {
-            _cts?.Cancel();
-            if (_nats != null)
-            {
-                await _nats.DisposeAsync();
-                Log.Information("NATS connection disposed.");
-            }
-        }
-
-
-        // used to free up resources when the object is no longer used 
-        // for synchronous method
         public void Dispose()
         {
-            Disconnect().Wait();
-        }
-
-        
-        // for asynchronous methods
-        public async ValueTask DisposeAsync()
-        {
-            await Disconnect();
+            _logger.Information("Closing connection for {User}", _userName);
+            _connection?.Close();
         }
     }
 }

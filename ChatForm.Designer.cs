@@ -64,7 +64,6 @@
             btnSendFile.TabIndex = 3;
             btnSendFile.Text = "SendFile";
             btnSendFile.UseVisualStyleBackColor = true;
-            btnSendFile.Click += btnSendFile_Click;
             // 
             // showMessageLayoutPanel
             // 

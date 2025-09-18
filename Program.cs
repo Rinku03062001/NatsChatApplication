@@ -1,9 +1,10 @@
-using NLog;
+using Microsoft.VisualBasic;
+using Serilog;
+using System.IO;
 namespace ChatAppNats
 {
     internal static class Program
     {
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
@@ -12,25 +13,61 @@ namespace ChatAppNats
         {
             try
             {
-                logger.Info("Application Starting...");
+                // Create the logs Directory If It does not exist
+                var logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+                Directory.CreateDirectory(logDir);
+
+                // Configure Serilog
+                Log.Logger = new LoggerConfiguration()
+                    .MinimumLevel.Information()
+                    .WriteTo.File(
+                        Path.Combine(logDir, "chatapp_log_.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 7,
+                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff}| {Level:u3} | {Message:lj}{NewLine}{Exception}")
+                        .CreateLogger();
+
+
+                Log.Information("Application Starting...");
+
+  
                 // To customize application configuration such as set high DPI settings or default font,
                 // see https://aka.ms/applicationconfiguration.
                 ApplicationConfiguration.Initialize();
 
-                string enteredName = InputBox.Show("Enter Your UserName: ", "Chat Form");
 
+                // prompt for username
+                string enteredName = Interaction.InputBox("Enter Your UserName: ", "Chat Form");
                 string userName = string.IsNullOrWhiteSpace(enteredName) ? Environment.UserName : enteredName;
 
+                // prompt for targt user
+                string enteredTarget = Interaction.InputBox("Enter target user for direct chat (leave blank for global):", "Chat Form");
+                string? targetuser = string.IsNullOrWhiteSpace(enteredTarget) ? null : enteredTarget;
 
-                Application.Run(new ChatForm(userName));
-                logger.Info("Application Exited.");
+
+                if(targetuser == null)
+                {
+                    Log.Information("Launching global chat for user {user}.", userName);
+                    Application.Run(new ChatForm(userName));
+                }
+                else
+                {
+                    Log.Information("Launching direct chat: {user} -> {target}", userName, targetuser);
+                    Application.Run(new ChatForm(userName, targetuser));
+                }
+
+                    Log.Information("Application Exited.");
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Unhandled exception occurred.");
-                throw;
+                Log.Error(ex, "Unhandled exception occurred.");
+                MessageBox.Show("An unexpected error occurred. Please check logs.",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }

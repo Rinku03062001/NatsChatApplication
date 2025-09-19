@@ -27,8 +27,8 @@ namespace ChatAppNats.Services
             _logger = logger ?? Log.Logger; // use global logger if not injected
 
             _userName = userName;
-            _subjectToPublish = $"Synapse_Publisher.{userName}";
-            _subjectToSubscribe = $"Synapse_Publisher.{targetUser}";
+            _subjectToPublish = $"Synapse_Publisher.{targetUser}";
+            _subjectToSubscribe = $"Synapse_Publisher.{userName}";
             _durableName = $"chat_consumer_{userName}";
 
             _logger.Information("Initializing ChatService for {User}, target={Target}, publish={Publish}, subscribe={Subscribe}, durable={Durable}",
@@ -86,7 +86,7 @@ namespace ChatAppNats.Services
                 if (ack != null)
                 {
                     _logger.Information("Message published by {User} to {Subject}, seq={Seq}, text={Message}",
-                        _userName, _subjectToPublish, ack.Seq, message);
+                        _userName, _subjectToPublish.Split('.')[1], _subjectToPublish, ack.Seq, message);
                 }
                 else
                 {

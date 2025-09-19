@@ -6,7 +6,12 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>icons8-chat-50.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="icons8-chat-50.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="NGS-ChatApp-Rinku-User.creds" />
@@ -14,9 +19,11 @@
 
   <ItemGroup>
     <PackageReference Include="Guna.UI2.WinForms" Version="2.0.4.7" />
+    <PackageReference Include="NATS.Client" Version="1.1.8" />
     <PackageReference Include="NATS.Client.Core" Version="2.7.0-preview.5" />
-    <PackageReference Include="NLog" Version="6.0.3" />
+    <PackageReference Include="NATS.Net" Version="2.7.0-preview.5" />
     <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

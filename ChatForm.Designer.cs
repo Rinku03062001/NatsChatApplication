@@ -32,8 +32,8 @@
             txtMessage = new TextBox();
             btnSend = new Button();
             btnSendFile = new Button();
-            showMessageLayoutPanel = new FlowLayoutPanel();
             panel1 = new Panel();
+            lstLogs = new ListBox();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -65,15 +65,6 @@
             btnSendFile.Text = "SendFile";
             btnSendFile.UseVisualStyleBackColor = true;
             // 
-            // showMessageLayoutPanel
-            // 
-            showMessageLayoutPanel.AutoScroll = true;
-            showMessageLayoutPanel.Dock = DockStyle.Top;
-            showMessageLayoutPanel.Location = new Point(0, 0);
-            showMessageLayoutPanel.Name = "showMessageLayoutPanel";
-            showMessageLayoutPanel.Size = new Size(814, 353);
-            showMessageLayoutPanel.TabIndex = 4;
-            // 
             // panel1
             // 
             panel1.Controls.Add(btnSendFile);
@@ -84,13 +75,21 @@
             panel1.Size = new Size(809, 86);
             panel1.TabIndex = 4;
             // 
+            // lstLogs
+            // 
+            lstLogs.FormattingEnabled = true;
+            lstLogs.Location = new Point(3, 6);
+            lstLogs.Name = "lstLogs";
+            lstLogs.Size = new Size(809, 344);
+            lstLogs.TabIndex = 5;
+            // 
             // ChatForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            ClientSize = new Size(814, 540);
-            Controls.Add(showMessageLayoutPanel);
+            ClientSize = new Size(814, 451);
+            Controls.Add(lstLogs);
             Controls.Add(panel1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
@@ -107,7 +106,7 @@
         private TextBox txtMessage;
         private Button btnSend;
         private Button btnSendFile;
-        private FlowLayoutPanel showMessageLayoutPanel;
         private Panel panel1;
+        private ListBox lstLogs;
     }
 }

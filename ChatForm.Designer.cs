@@ -39,7 +39,7 @@
             // 
             // txtMessage
             // 
-            txtMessage.Location = new Point(100, 11);
+            txtMessage.Location = new Point(121, 11);
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
             txtMessage.Size = new Size(600, 67);
@@ -47,23 +47,26 @@
             // 
             // btnSend
             // 
-            btnSend.BackColor = SystemColors.ControlLight;
-            btnSend.Location = new Point(706, 11);
+            btnSend.BackColor = Color.MediumTurquoise;
+            btnSend.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnSend.Location = new Point(718, 11);
             btnSend.Name = "btnSend";
-            btnSend.Size = new Size(100, 67);
+            btnSend.Size = new Size(88, 67);
             btnSend.TabIndex = 2;
             btnSend.Text = "Send\r\n";
-            btnSend.UseVisualStyleBackColor = true;
+            btnSend.UseVisualStyleBackColor = false;
             btnSend.Click += btnSend_Click;
             // 
             // btnSendFile
             // 
+            btnSendFile.BackColor = Color.Turquoise;
+            btnSendFile.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnSendFile.Location = new Point(9, 13);
             btnSendFile.Name = "btnSendFile";
-            btnSendFile.Size = new Size(83, 65);
+            btnSendFile.Size = new Size(106, 65);
             btnSendFile.TabIndex = 3;
             btnSendFile.Text = "SendFile";
-            btnSendFile.UseVisualStyleBackColor = true;
+            btnSendFile.UseVisualStyleBackColor = false;
             // 
             // panel1
             // 
@@ -77,10 +80,14 @@
             // 
             // lstLogs
             // 
+            lstLogs.BackColor = Color.SeaGreen;
+            lstLogs.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lstLogs.ForeColor = SystemColors.InactiveBorder;
             lstLogs.FormattingEnabled = true;
+            lstLogs.ItemHeight = 25;
             lstLogs.Location = new Point(3, 6);
             lstLogs.Name = "lstLogs";
-            lstLogs.Size = new Size(809, 344);
+            lstLogs.Size = new Size(809, 354);
             lstLogs.TabIndex = 5;
             // 
             // ChatForm
@@ -88,6 +95,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
+            BackColor = Color.MistyRose;
             ClientSize = new Size(814, 451);
             Controls.Add(lstLogs);
             Controls.Add(panel1);

@@ -16,8 +16,8 @@ namespace ChatAppNats
         {
             InitializeComponent();
 
-            _userName = userName ?? "Unknown";
-            _targetUser = targetUser ?? "Unknown";
+            _userName = (userName ?? "Unknown").Trim().ToLower();
+            _targetUser = (targetUser ?? "Unknown").Trim().ToLower();
             Text = $"Synapse - {_userName}";
 
             _logger = logger ?? Log.Logger;
@@ -93,10 +93,5 @@ namespace ChatAppNats
             base.OnFormClosing(e);
         }
 
-        private void splitContainer1_Panel2_Paint(object sender, PaintEventArgs e)
-        {
-            // Optional: Add log for debugging UI paint calls if needed
-            //_logger.Debug("Redrawing Panel2 for {User}", _userName);
-        }
     }
 }

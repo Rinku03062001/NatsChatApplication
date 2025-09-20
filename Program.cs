@@ -1,3 +1,4 @@
+
 using Microsoft.VisualBasic;
 using Serilog;
 using System.IO;
@@ -30,33 +31,35 @@ namespace ChatAppNats
 
                 Log.Information("Application Starting...");
 
-  
+
                 // To customize application configuration such as set high DPI settings or default font,
                 // see https://aka.ms/applicationconfiguration.
                 ApplicationConfiguration.Initialize();
 
+                RegisterForm registerForm = new RegisterForm();
+                Application.Run(new RegisterForm());
 
                 // prompt for username
-                string enteredName = Interaction.InputBox("Enter Your UserName: ", "Chat Form");
-                string userName = string.IsNullOrWhiteSpace(enteredName) ? Environment.UserName : enteredName;
+                //string enteredName = Interaction.InputBox("Enter Your UserName: ", "Chat Form");
+                //string userName = string.IsNullOrWhiteSpace(enteredName) ? Environment.UserName : enteredName;
 
-                // prompt for targt user
-                string enteredTarget = Interaction.InputBox("Enter target user for direct chat (leave blank for global):", "Chat Form");
-                string? targetuser = string.IsNullOrWhiteSpace(enteredTarget) ? null : enteredTarget;
+                //// prompt for targt user
+                //string enteredTarget = Interaction.InputBox("Enter target user for direct chat (leave blank for global):", "Chat Form");
+                //string? targetuser = string.IsNullOrWhiteSpace(enteredTarget) ? null : enteredTarget;
 
 
-                if(targetuser == null)
-                {
-                    Log.Information("Launching global chat for user {user}.", userName);
-                    Application.Run(new ChatForm(userName));
-                }
-                else
-                {
-                    Log.Information("Launching direct chat: {user} -> {target}", userName, targetuser);
-                    Application.Run(new ChatForm(userName, targetuser));
-                }
+                //if (targetuser == null)
+                //{
+                //    Log.Information("Launching global chat for user {user}.", userName);
+                //    Application.Run(new ChatForm(userName));
+                //}
+                //else
+                //{
+                //    Log.Information("Launching direct chat: {user} -> {target}", userName, targetuser);
+                //    Application.Run(new ChatForm(userName, targetuser));
+                //}
 
-                    Log.Information("Application Exited.");
+                Log.Information("Application Exited.");
             }
             catch (Exception ex)
             {

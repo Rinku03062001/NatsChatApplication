@@ -10,12 +10,13 @@ namespace ChatAppNats.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public DbSet<User> users {  get; set; }
+        public DbSet<User> Users {  get; set; }
         public DbSet<Models.Message> Messages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(@"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True");
+            //optionsBuilder.UseSqlServer(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\ChatAppDB.mdf;Integrated Security=True;Connect Timeout=30");
         }
     }
 }

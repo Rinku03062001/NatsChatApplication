@@ -1,4 +1,5 @@
-﻿using NATS.Client;
+﻿
+using NATS.Client;
 using NATS.Client.JetStream;
 using Serilog;
 using System;

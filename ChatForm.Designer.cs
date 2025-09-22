@@ -29,13 +29,17 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChatForm));
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             txtMessage = new TextBox();
-            btnSend = new Button();
-            btnSendFile = new Button();
             panel1 = new Panel();
+            ImageButtonEmojis = new Guna.UI2.WinForms.Guna2ImageButton();
+            ImageButtonAttachment = new Guna.UI2.WinForms.Guna2ImageButton();
+            ImageButtonSend = new Guna.UI2.WinForms.Guna2ImageButton();
             lstLogs = new ListBox();
             splitContainer1 = new SplitContainer();
-            flowLayoutPanelUsers = new FlowLayoutPanel();
+            listBoxUsers = new ListBox();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -45,44 +49,70 @@
             // 
             // txtMessage
             // 
-            txtMessage.Location = new Point(106, 15);
+            txtMessage.Location = new Point(115, 13);
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
-            txtMessage.Size = new Size(597, 67);
+            txtMessage.Size = new Size(634, 67);
             txtMessage.TabIndex = 1;
-            // 
-            // btnSend
-            // 
-            btnSend.BackColor = Color.MediumTurquoise;
-            btnSend.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnSend.Location = new Point(706, 14);
-            btnSend.Name = "btnSend";
-            btnSend.Size = new Size(88, 67);
-            btnSend.TabIndex = 2;
-            btnSend.Text = "Send\r\n";
-            btnSend.UseVisualStyleBackColor = false;
-            btnSend.Click += btnSend_Click;
-            // 
-            // btnSendFile
-            // 
-            btnSendFile.BackColor = Color.Turquoise;
-            btnSendFile.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnSendFile.Location = new Point(3, 15);
-            btnSendFile.Name = "btnSendFile";
-            btnSendFile.Size = new Size(106, 65);
-            btnSendFile.TabIndex = 3;
-            btnSendFile.Text = "SendFile";
-            btnSendFile.UseVisualStyleBackColor = false;
             // 
             // panel1
             // 
+            panel1.Controls.Add(ImageButtonEmojis);
+            panel1.Controls.Add(ImageButtonAttachment);
+            panel1.Controls.Add(ImageButtonSend);
             panel1.Controls.Add(txtMessage);
-            panel1.Controls.Add(btnSendFile);
-            panel1.Controls.Add(btnSend);
             panel1.Location = new Point(3, 466);
             panel1.Name = "panel1";
             panel1.Size = new Size(797, 87);
             panel1.TabIndex = 4;
+            // 
+            // ImageButtonEmojis
+            // 
+            ImageButtonEmojis.CheckedState.ImageSize = new Size(64, 64);
+            ImageButtonEmojis.HoverState.ImageSize = new Size(64, 64);
+            ImageButtonEmojis.Image = (Image)resources.GetObject("ImageButtonEmojis.Image");
+            ImageButtonEmojis.ImageOffset = new Point(0, 0);
+            ImageButtonEmojis.ImageRotate = 0F;
+            ImageButtonEmojis.ImageSize = new Size(36, 36);
+            ImageButtonEmojis.Location = new Point(13, 15);
+            ImageButtonEmojis.Name = "ImageButtonEmojis";
+            ImageButtonEmojis.PressedState.ImageSize = new Size(64, 64);
+            ImageButtonEmojis.ShadowDecoration.CustomizableEdges = customizableEdges7;
+            ImageButtonEmojis.Size = new Size(38, 65);
+            ImageButtonEmojis.TabIndex = 6;
+            // 
+            // ImageButtonAttachment
+            // 
+            ImageButtonAttachment.CheckedState.ImageSize = new Size(64, 64);
+            ImageButtonAttachment.HoverState.ImageSize = new Size(64, 64);
+            ImageButtonAttachment.Image = (Image)resources.GetObject("ImageButtonAttachment.Image");
+            ImageButtonAttachment.ImageOffset = new Point(0, 0);
+            ImageButtonAttachment.ImageRotate = 0F;
+            ImageButtonAttachment.ImageSize = new Size(36, 36);
+            ImageButtonAttachment.Location = new Point(62, 15);
+            ImageButtonAttachment.Name = "ImageButtonAttachment";
+            ImageButtonAttachment.PressedState.ImageSize = new Size(64, 64);
+            ImageButtonAttachment.ShadowDecoration.CustomizableEdges = customizableEdges8;
+            ImageButtonAttachment.Size = new Size(37, 65);
+            ImageButtonAttachment.TabIndex = 5;
+            ImageButtonAttachment.Click += ImageButtonAttachment_Click;
+            // 
+            // ImageButtonSend
+            // 
+            ImageButtonSend.BackColor = Color.Transparent;
+            ImageButtonSend.CheckedState.ImageSize = new Size(64, 64);
+            ImageButtonSend.HoverState.ImageSize = new Size(64, 64);
+            ImageButtonSend.Image = (Image)resources.GetObject("ImageButtonSend.Image");
+            ImageButtonSend.ImageOffset = new Point(0, 0);
+            ImageButtonSend.ImageRotate = 0F;
+            ImageButtonSend.ImageSize = new Size(36, 36);
+            ImageButtonSend.Location = new Point(746, 15);
+            ImageButtonSend.Name = "ImageButtonSend";
+            ImageButtonSend.PressedState.ImageSize = new Size(64, 64);
+            ImageButtonSend.ShadowDecoration.CustomizableEdges = customizableEdges9;
+            ImageButtonSend.Size = new Size(46, 65);
+            ImageButtonSend.TabIndex = 4;
+            ImageButtonSend.Click += ImageButtonSend_Click;
             // 
             // lstLogs
             // 
@@ -91,43 +121,50 @@
             lstLogs.ForeColor = SystemColors.InactiveBorder;
             lstLogs.FormattingEnabled = true;
             lstLogs.ItemHeight = 25;
-            lstLogs.Location = new Point(3, 6);
+            lstLogs.Location = new Point(3, 0);
             lstLogs.Name = "lstLogs";
-            lstLogs.Size = new Size(794, 454);
+            lstLogs.Size = new Size(801, 454);
             lstLogs.TabIndex = 5;
             // 
             // splitContainer1
             // 
-            splitContainer1.Location = new Point(3, 6);
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Location = new Point(0, 0);
             splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(flowLayoutPanelUsers);
+            splitContainer1.Panel1.Controls.Add(listBoxUsers);
             // 
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(panel1);
             splitContainer1.Panel2.Controls.Add(lstLogs);
-            splitContainer1.Size = new Size(1056, 553);
-            splitContainer1.SplitterDistance = 249;
+            splitContainer1.Size = new Size(1057, 565);
+            splitContainer1.SplitterDistance = 246;
             splitContainer1.TabIndex = 6;
             // 
-            // flowLayoutPanelUsers
+            // listBoxUsers
             // 
-            flowLayoutPanelUsers.AutoScroll = true;
-            flowLayoutPanelUsers.Location = new Point(3, 3);
-            flowLayoutPanelUsers.Name = "flowLayoutPanelUsers";
-            flowLayoutPanelUsers.Size = new Size(243, 543);
-            flowLayoutPanelUsers.TabIndex = 0;
+            listBoxUsers.BackColor = Color.Orange;
+            listBoxUsers.BorderStyle = BorderStyle.FixedSingle;
+            listBoxUsers.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            listBoxUsers.ForeColor = SystemColors.InactiveCaptionText;
+            listBoxUsers.FormattingEnabled = true;
+            listBoxUsers.ItemHeight = 25;
+            listBoxUsers.Location = new Point(0, 3);
+            listBoxUsers.Name = "listBoxUsers";
+            listBoxUsers.Size = new Size(241, 552);
+            listBoxUsers.TabIndex = 0;
+            listBoxUsers.SelectedIndexChanged += listBoxUsers_SelectedIndexChanged;
             // 
             // ChatForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
-            BackColor = Color.MistyRose;
-            ClientSize = new Size(1058, 565);
+            BackColor = Color.White;
+            ClientSize = new Size(1057, 565);
             Controls.Add(splitContainer1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
@@ -135,6 +172,7 @@
             SizeGripStyle = SizeGripStyle.Hide;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Synapse";
+            Load += ChatForm_Load;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             splitContainer1.Panel1.ResumeLayout(false);
@@ -146,11 +184,12 @@
 
         #endregion
         private TextBox txtMessage;
-        private Button btnSend;
-        private Button btnSendFile;
         private Panel panel1;
         private ListBox lstLogs;
         private SplitContainer splitContainer1;
-        private FlowLayoutPanel flowLayoutPanelUsers;
+        private ListBox listBoxUsers;
+        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonSend;
+        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonAttachment;
+        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonEmojis;
     }
 }

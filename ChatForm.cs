@@ -1,4 +1,6 @@
-﻿using ChatAppNats.Services;
+﻿using ChatAppNats.Data;
+using ChatAppNats.Models;
+using ChatAppNats.Services;
 using Serilog;
 using System;
 using System.Windows.Forms;
@@ -12,12 +14,16 @@ namespace ChatAppNats
         private readonly string _userName;
         private readonly string _targetUser;
 
-        public ChatForm(string userName, string targetUser = null, ILogger logger = null)
+        private string _selectedUser;
+        private int? _selectedUserId;
+
+
+        public ChatForm(string userName, ILogger logger = null)
         {
             InitializeComponent();
 
             _userName = (userName ?? "Unknown").Trim().ToLower();
-            _targetUser = (targetUser ?? "Unknown").Trim().ToLower();
+
             Text = $"Synapse - {_userName}";
 
             _logger = logger ?? Log.Logger;
@@ -37,7 +43,9 @@ namespace ChatAppNats
             }
         }
 
-        private async void btnSend_Click(object sender, EventArgs e)
+
+
+        private async void ImageButtonSend_Click(object sender, EventArgs e)
         {
             string message = txtMessage.Text.Trim();
 
@@ -49,6 +57,27 @@ namespace ChatAppNats
                     await _chatPublisher.PublishMessageAsync(fullMessage);
 
                     lstLogs.Items.Add($"Me: {message}");
+
+                    // save messages to db
+                    using (var context = new ApplicationDbContext())
+                    {
+                        var senderUser = context.Users.FirstOrDefault(u => u.UserName == _userName);
+                        if (senderUser != null)
+                        {
+                            context.Messages.Add(new Models.Message
+                            {
+                                SenderId = senderUser.UserId,
+                                ReceiverId = _selectedUserId.Value,
+                                Text = message,
+                                SendAt = DateTime.Now,
+                                IsRead = false
+                            });
+                        }
+
+                        context.SaveChanges();
+                    }
+
+
                     _logger.Information("User {User} sent message='{Message}' to {Target}", _userName, message, _targetUser);
 
                     txtMessage.Clear();
@@ -91,6 +120,137 @@ namespace ChatAppNats
             _logger.Information("Closing ChatForm for {User}", _userName);
             _chatPublisher?.Dispose();
             base.OnFormClosing(e);
+        }
+
+        private void ChatForm_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var users = context.Users
+                        .Where(u => u.UserName != _userName)
+                        .Select(u => new { u.UserId, u.UserName })
+                        .ToList();
+
+                    listBoxUsers.DisplayMember = "UserName";
+                    listBoxUsers.ValueMember = "UserId";
+                    listBoxUsers.DataSource = users;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error loading registered users in ChatForm");
+                MessageBox.Show("Error loading users. Check Logs.");
+            }
+        }
+
+
+
+        private void OpenFileDialogFor(AttachmentType type)
+        {
+            MessageBox.Show($"You selected {type}");
+        }
+
+        private void listBoxUsers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxUsers.SelectedItems != null)
+            {
+                _selectedUserId = (int)listBoxUsers.SelectedValue;
+                _logger.Information("{User} selected chat with {Target}", _userName, _selectedUser);
+
+                // cleat old chat display
+                lstLogs.Items.Clear();
+
+                // Load chat history 
+                LoadChatHistory(_selectedUserId.Value);
+            }
+        }
+
+
+        private void LoadChatHistory(int targetUserId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var senderUser = context.Users.FirstOrDefault(u => u.UserName == _userName);
+                    if (senderUser == null) return;
+
+                    var chats = context.Messages
+                        .Where(m =>
+                            (m.SenderId == senderUser.UserId && m.ReceiverId == targetUserId) ||
+                            (m.SenderId == targetUserId && m.ReceiverId == senderUser.UserId))
+                        .OrderBy(m => m.SendAt)
+                        .ToList();
+
+
+                    // fetch all involved users (sender + receivers)
+                    var userIds = chats.Select(c => c.SenderId).Distinct().ToList();
+                    var userMap = context.Users
+                        .Where(u => userIds.Contains(u.UserId))
+                        .ToDictionary(u => u.UserId, u => u.UserName);
+
+                    lstLogs.Items.Clear();
+                    foreach (var msg in chats)
+                    {
+                        string prefix = msg.SenderId == senderUser.UserId ? "Me" : userMap[msg.SenderId];
+                        lstLogs.Items.Add($"{prefix}: {msg.Text}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error loading chat history for {User} with UserId {TargetId}",
+                    _userName, targetUserId);
+                MessageBox.Show("Error loading chat history. Check logs.");
+            }
+        }
+
+        private void ImageButtonAttachment_Click(object sender, EventArgs e)
+        {
+            using(OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Title = "Select a file to send";
+                ofd.Filter = "All files (*.*)|*.*";
+                ofd.Multiselect = true;
+
+                if(ofd.ShowDialog() == DialogResult.OK)
+                {
+                    string sourceFile = ofd.FileName;
+                    string fileName = Path.GetFileName(sourceFile);
+
+                    // copy to desktop
+                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    string destFile = Path.Combine(desktopPath, fileName);
+
+                    try
+                    {
+                        File.Copy(sourceFile, destFile, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error copying file : " + ex.Message);
+                        return;
+                    }
+
+
+                    // Show in lstLogs
+                    lstLogs.Items.Add($"You sent : {fileName}");
+
+                    // Send to receiver
+                    SendFileToReceiver(sourceFile, fileName);
+                }
+            }
+        }
+
+
+
+        private void SendFileToReceiver(string filePath, string fileName)
+        {
+            MessageBox.Show($"Sending File '{fileName}' to receiver... ");
+
+            byte[] fileBytes = File.ReadAllBytes(filePath);
         }
 
     }

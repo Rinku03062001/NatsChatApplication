@@ -29,17 +29,17 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChatForm));
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             txtMessage = new TextBox();
             panel1 = new Panel();
             ImageButtonEmojis = new Guna.UI2.WinForms.Guna2ImageButton();
             ImageButtonAttachment = new Guna.UI2.WinForms.Guna2ImageButton();
             ImageButtonSend = new Guna.UI2.WinForms.Guna2ImageButton();
-            lstLogs = new ListBox();
             splitContainer1 = new SplitContainer();
             listBoxUsers = new ListBox();
+            flowLayoutPanelChat = new FlowLayoutPanel();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -77,7 +77,7 @@
             ImageButtonEmojis.Location = new Point(13, 15);
             ImageButtonEmojis.Name = "ImageButtonEmojis";
             ImageButtonEmojis.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonEmojis.ShadowDecoration.CustomizableEdges = customizableEdges7;
+            ImageButtonEmojis.ShadowDecoration.CustomizableEdges = customizableEdges1;
             ImageButtonEmojis.Size = new Size(38, 65);
             ImageButtonEmojis.TabIndex = 6;
             // 
@@ -92,7 +92,7 @@
             ImageButtonAttachment.Location = new Point(62, 15);
             ImageButtonAttachment.Name = "ImageButtonAttachment";
             ImageButtonAttachment.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonAttachment.ShadowDecoration.CustomizableEdges = customizableEdges8;
+            ImageButtonAttachment.ShadowDecoration.CustomizableEdges = customizableEdges2;
             ImageButtonAttachment.Size = new Size(37, 65);
             ImageButtonAttachment.TabIndex = 5;
             ImageButtonAttachment.Click += ImageButtonAttachment_Click;
@@ -109,22 +109,10 @@
             ImageButtonSend.Location = new Point(746, 15);
             ImageButtonSend.Name = "ImageButtonSend";
             ImageButtonSend.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonSend.ShadowDecoration.CustomizableEdges = customizableEdges9;
+            ImageButtonSend.ShadowDecoration.CustomizableEdges = customizableEdges3;
             ImageButtonSend.Size = new Size(46, 65);
             ImageButtonSend.TabIndex = 4;
             ImageButtonSend.Click += ImageButtonSend_Click;
-            // 
-            // lstLogs
-            // 
-            lstLogs.BackColor = Color.SeaGreen;
-            lstLogs.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lstLogs.ForeColor = SystemColors.InactiveBorder;
-            lstLogs.FormattingEnabled = true;
-            lstLogs.ItemHeight = 25;
-            lstLogs.Location = new Point(3, 0);
-            lstLogs.Name = "lstLogs";
-            lstLogs.Size = new Size(801, 454);
-            lstLogs.TabIndex = 5;
             // 
             // splitContainer1
             // 
@@ -139,7 +127,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(panel1);
-            splitContainer1.Panel2.Controls.Add(lstLogs);
+            splitContainer1.Panel2.Controls.Add(flowLayoutPanelChat);
             splitContainer1.Size = new Size(1057, 565);
             splitContainer1.SplitterDistance = 246;
             splitContainer1.TabIndex = 6;
@@ -157,6 +145,16 @@
             listBoxUsers.Size = new Size(241, 552);
             listBoxUsers.TabIndex = 0;
             listBoxUsers.SelectedIndexChanged += listBoxUsers_SelectedIndexChanged;
+            // 
+            // flowLayoutPanelChat
+            // 
+            flowLayoutPanelChat.AutoScroll = true;
+            flowLayoutPanelChat.FlowDirection = FlowDirection.TopDown;
+            flowLayoutPanelChat.Location = new Point(3, 3);
+            flowLayoutPanelChat.Name = "flowLayoutPanelChat";
+            flowLayoutPanelChat.Size = new Size(801, 457);
+            flowLayoutPanelChat.TabIndex = 6;
+            flowLayoutPanelChat.WrapContents = false;
             // 
             // ChatForm
             // 
@@ -185,11 +183,11 @@
         #endregion
         private TextBox txtMessage;
         private Panel panel1;
-        private ListBox lstLogs;
         private SplitContainer splitContainer1;
         private ListBox listBoxUsers;
         private Guna.UI2.WinForms.Guna2ImageButton ImageButtonSend;
         private Guna.UI2.WinForms.Guna2ImageButton ImageButtonAttachment;
         private Guna.UI2.WinForms.Guna2ImageButton ImageButtonEmojis;
+        private FlowLayoutPanel flowLayoutPanelChat;
     }
 }

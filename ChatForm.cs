@@ -23,11 +23,9 @@ namespace ChatAppNats
             InitializeComponent();
 
             _userName = (userName ?? "Unknown").Trim().ToLower();
-
             Text = $"Synapse - {_userName}";
 
             _logger = logger ?? Log.Logger;
-
             _logger.Information("Opening ChatForm for User={User}, Target={Target}", _userName, _targetUser);
 
             try
@@ -56,7 +54,9 @@ namespace ChatAppNats
                     string fullMessage = $"{_userName}: {message}";
                     await _chatPublisher.PublishMessageAsync(fullMessage);
 
-                    lstLogs.Items.Add($"Me: {message}");
+                    //lstLogs.Items.Add($"Me: {message}");
+                    DisplayMessage("Me", message); 
+
 
                     // save messages to db
                     using (var context = new ApplicationDbContext())
@@ -98,13 +98,14 @@ namespace ChatAppNats
         {
             try
             {
-                if (lstLogs.InvokeRequired)
+                if (flowLayoutPanelChat.InvokeRequired)
                 {
-                    lstLogs.Invoke(new Action(() => lstLogs.Items.Add(message)));
+                    flowLayoutPanelChat.Invoke(new Action(() => DisplayMessage("Other", message, false)));
                 }
                 else
                 {
-                    lstLogs.Items.Add(message);
+                    //lstLogs.Items.Add(message);
+                    DisplayMessage("Other", message, false);
                 }
 
                 _logger.Information("User {User} received message='{Message}'", _userName, message);
@@ -120,6 +121,7 @@ namespace ChatAppNats
             _logger.Information("Closing ChatForm for {User}", _userName);
             _chatPublisher?.Dispose();
             base.OnFormClosing(e);
+            Application.Exit();
         }
 
         private void ChatForm_Load(object sender, EventArgs e)
@@ -160,7 +162,8 @@ namespace ChatAppNats
                 _logger.Information("{User} selected chat with {Target}", _userName, _selectedUser);
 
                 // cleat old chat display
-                lstLogs.Items.Clear();
+                //lstLogs.Items.Clear();
+                flowLayoutPanelChat.Controls.Clear();
 
                 // Load chat history 
                 LoadChatHistory(_selectedUserId.Value);
@@ -191,11 +194,14 @@ namespace ChatAppNats
                         .Where(u => userIds.Contains(u.UserId))
                         .ToDictionary(u => u.UserId, u => u.UserName);
 
-                    lstLogs.Items.Clear();
+                    //lstLogs.Items.Clear();
+                    flowLayoutPanelChat.Controls.Clear();
+
                     foreach (var msg in chats)
                     {
                         string prefix = msg.SenderId == senderUser.UserId ? "Me" : userMap[msg.SenderId];
-                        lstLogs.Items.Add($"{prefix}: {msg.Text}");
+                        //lstLogs.Items.Add($"{prefix}: {msg.Text}");
+                        DisplayMessage(prefix, msg.Text);
                     }
                 }
             }
@@ -213,7 +219,7 @@ namespace ChatAppNats
             {
                 ofd.Title = "Select a file to send";
                 ofd.Filter = "All files (*.*)|*.*";
-                ofd.Multiselect = true;
+                ofd.Multiselect = false;
 
                 if(ofd.ShowDialog() == DialogResult.OK)
                 {
@@ -234,12 +240,17 @@ namespace ChatAppNats
                         return;
                     }
 
+                    // show in chat panel
+                    DisplayMessage("Me", sourceFile, true);
+
+                    // send to receiver
+                    SendFileToReceiver(sourceFile, fileName);
+
 
                     // Show in lstLogs
-                    lstLogs.Items.Add($"You sent : {fileName}");
+                    //lstLogs.Items.Add($"You sent : {fileName}");
 
-                    // Send to receiver
-                    SendFileToReceiver(sourceFile, fileName);
+                 
                 }
             }
         }
@@ -251,6 +262,68 @@ namespace ChatAppNats
             MessageBox.Show($"Sending File '{fileName}' to receiver... ");
 
             byte[] fileBytes = File.ReadAllBytes(filePath);
+        }
+
+
+        private void DisplayMessage(string sender, string content, bool isFile = false)
+        {
+            Panel msgPanel = new Panel
+            {
+                AutoSize = true,
+                BackColor = sender == "Me" ? Color.LightBlue : Color.LightGreen,
+                Padding = new Padding(5),
+                Margin = new Padding(5)
+            };
+
+            if(!isFile)
+            {
+                // Normal Text
+                Label lbl = new Label
+                {
+                    Text = $"{sender}: {content}",
+                    AutoSize = true,
+                    MaximumSize = new Size(300, 0)
+                };
+                msgPanel.Controls.Add(lbl);
+            }
+            else
+            {
+                string ext = Path.GetExtension(content).ToLower();
+                if(ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif")
+                {
+                    // Image Preview
+                    PictureBox pic = new PictureBox
+                    {
+                        Image = Image.FromFile(content),
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        Width = 150,
+                        Height = 150
+                    };
+                    flowLayoutPanelChat.Controls.Add(pic);
+                }
+                else
+                {
+                    // Non Image File : SHow file name
+                    LinkLabel link = new LinkLabel
+                    {
+                        Text = $"@ {Path.GetFileName(content)}",
+                        AutoSize = true,
+                        Tag = content
+                    };
+                    link.Click += (s, e) =>
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = link.Tag.ToString(),
+                            UseShellExecute = true
+                        });
+                    };
+                    msgPanel.Controls.Add(link);
+                }
+            }
+
+            flowLayoutPanelChat.Controls.Add(msgPanel);
+            flowLayoutPanelChat.ScrollControlIntoView(msgPanel);
         }
 
     }

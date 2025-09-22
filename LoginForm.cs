@@ -16,6 +16,7 @@ namespace ChatAppNats
     public partial class LoginForm : Form
     {
         private string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
+
         public LoginForm()
         {
             InitializeComponent();
@@ -63,12 +64,12 @@ namespace ChatAppNats
                         }
 
 
-                        // prompt for targt user
-                        string enteredTarget = Interaction.InputBox("Enter target user for direct chat (leave blank for global):", "Chat Form");
-                        string? targetuser = string.IsNullOrWhiteSpace(enteredTarget) ? null : enteredTarget;
+                        //// prompt for targt user
+                        //string enteredTarget = Interaction.InputBox("Enter target user for direct chat (leave blank for global):", "Chat Form");
+                        //string? targetuser = string.IsNullOrWhiteSpace(enteredTarget) ? null : enteredTarget;
 
 
-                        ChatForm chatForm = new ChatForm(loggedInUser, targetuser);
+                        ChatForm chatForm = new ChatForm(loggedInUser);
                         chatForm.Show();
                         this.Close();
                     }

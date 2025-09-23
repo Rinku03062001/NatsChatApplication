@@ -9,10 +9,11 @@ namespace ChatAppNats
 {
     public partial class ChatForm : Form
     {
-        private readonly ChatService _chatPublisher;
+        private readonly ChatService _chatService;
         private readonly ILogger _logger;
         private readonly string _userName;
         private readonly string _targetUser;
+        private readonly CreateGroupForm _createGroupForm;
 
         private string _selectedUser;
         private int? _selectedUserId;
@@ -25,13 +26,15 @@ namespace ChatAppNats
             _userName = (userName ?? "Unknown").Trim().ToLower();
             Text = $"Synapse - {_userName}";
 
+            _createGroupForm = new CreateGroupForm(userName, _chatService);
+
             _logger = logger ?? Log.Logger;
             _logger.Information("Opening ChatForm for User={User}, Target={Target}", _userName, _targetUser);
 
             try
             {
-                _chatPublisher = new ChatService(_userName, _targetUser, _logger);
-                _chatPublisher.Subscribe(OnMessageReceived);
+                _chatService = new ChatService(_userName, _targetUser, _logger);
+                _chatService.Subscribe(OnMessageReceived);
                 _logger.Information("ChatService subscription started for {User}", _userName);
             }
             catch (Exception ex)
@@ -40,6 +43,34 @@ namespace ChatAppNats
                 MessageBox.Show("Failed to connect to chat service. Please check logs.");
             }
         }
+
+
+
+        private void ChatForm_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    var users = context.Users
+                        .Where(u => u.UserName != _userName)
+                        .Select(u => new { u.UserId, u.UserName })
+                        .ToList();
+
+                    listBoxUsers.DisplayMember = "UserName";
+                    listBoxUsers.ValueMember = "UserId";
+                    listBoxUsers.DataSource = users;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error loading registered users in ChatForm");
+                MessageBox.Show("Error loading users. Check Logs.");
+            }
+
+            LoadGroups();
+        }
+
 
 
 
@@ -52,10 +83,10 @@ namespace ChatAppNats
                 try
                 {
                     string fullMessage = $"{_userName}: {message}";
-                    await _chatPublisher.PublishMessageAsync(fullMessage);
+                    await _chatService.PublishMessageAsync(fullMessage);
 
                     //lstLogs.Items.Add($"Me: {message}");
-                    DisplayMessage("Me", message); 
+                    DisplayMessage("Me", message);
 
 
                     // save messages to db
@@ -119,33 +150,12 @@ namespace ChatAppNats
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             _logger.Information("Closing ChatForm for {User}", _userName);
-            _chatPublisher?.Dispose();
+            _chatService?.Dispose();
             base.OnFormClosing(e);
             Application.Exit();
         }
 
-        private void ChatForm_Load(object sender, EventArgs e)
-        {
-            try
-            {
-                using (var context = new ApplicationDbContext())
-                {
-                    var users = context.Users
-                        .Where(u => u.UserName != _userName)
-                        .Select(u => new { u.UserId, u.UserName })
-                        .ToList();
 
-                    listBoxUsers.DisplayMember = "UserName";
-                    listBoxUsers.ValueMember = "UserId";
-                    listBoxUsers.DataSource = users;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error loading registered users in ChatForm");
-                MessageBox.Show("Error loading users. Check Logs.");
-            }
-        }
 
 
 
@@ -215,13 +225,13 @@ namespace ChatAppNats
 
         private void ImageButtonAttachment_Click(object sender, EventArgs e)
         {
-            using(OpenFileDialog ofd = new OpenFileDialog())
+            using (OpenFileDialog ofd = new OpenFileDialog())
             {
                 ofd.Title = "Select a file to send";
                 ofd.Filter = "All files (*.*)|*.*";
                 ofd.Multiselect = false;
 
-                if(ofd.ShowDialog() == DialogResult.OK)
+                if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     string sourceFile = ofd.FileName;
                     string fileName = Path.GetFileName(sourceFile);
@@ -250,7 +260,7 @@ namespace ChatAppNats
                     // Show in lstLogs
                     //lstLogs.Items.Add($"You sent : {fileName}");
 
-                 
+
                 }
             }
         }
@@ -275,7 +285,7 @@ namespace ChatAppNats
                 Margin = new Padding(5)
             };
 
-            if(!isFile)
+            if (!isFile)
             {
                 // Normal Text
                 Label lbl = new Label
@@ -289,7 +299,7 @@ namespace ChatAppNats
             else
             {
                 string ext = Path.GetExtension(content).ToLower();
-                if(ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif")
+                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif")
                 {
                     // Image Preview
                     PictureBox pic = new PictureBox
@@ -326,5 +336,26 @@ namespace ChatAppNats
             flowLayoutPanelChat.ScrollControlIntoView(msgPanel);
         }
 
+        private void ImageButtonCreateGroup_Click(object sender, EventArgs e)
+        {
+            var createGroupForm = new CreateGroupForm(_userName, _chatService);
+
+            // Subscribe to event
+            createGroupForm.GroupCreated += () => LoadGroups();
+
+            createGroupForm.ShowDialog();
+        }
+
+
+        private void LoadGroups()
+        {
+            var groups = _createGroupForm.GetUserGroups(_userName);
+
+            lstGroups.Items.Clear();
+            foreach (var group in groups)
+            {
+                lstGroups.Items.Add(group);
+            }
+        }
     }
 }

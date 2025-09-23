@@ -12,6 +12,8 @@ namespace ChatAppNats.Data
     {
         public DbSet<User> Users {  get; set; }
         public DbSet<Models.Message> Messages { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<GroupMember> GroupMembers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

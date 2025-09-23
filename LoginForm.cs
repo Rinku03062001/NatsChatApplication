@@ -54,7 +54,7 @@ namespace ChatAppNats
                     {
                         string loggedInUser = result.ToString();
 
-                        MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        // MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         // TODO: Open ChatForm or MainForm
                         this.Hide();
 

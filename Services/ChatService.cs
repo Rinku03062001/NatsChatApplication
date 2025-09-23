@@ -77,7 +77,7 @@ namespace ChatAppNats.Services
         }
 
         // Publisher
-        public async Task PublishMessageAsync(string message)
+        public async Task PublishMessageAsync(string message, string userName = null)
         {
             try
             {

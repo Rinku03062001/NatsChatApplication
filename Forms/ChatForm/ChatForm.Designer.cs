@@ -29,13 +29,13 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChatForm));
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             txtMessage = new TextBox();
             panelTypeMessage = new Panel();
             ImageButtonEmojis = new Guna.UI2.WinForms.Guna2ImageButton();
@@ -47,10 +47,11 @@
             panelLeftHeader2 = new Panel();
             lblChatTitle = new Guna.UI2.WinForms.Guna2HtmlLabel();
             panelLeft1 = new Panel();
+            panel2 = new Panel();
+            listBoxUsers = new ListBox();
             panelLeftHeader1 = new Panel();
             guna2HtmlLabel1 = new Guna.UI2.WinForms.Guna2HtmlLabel();
             ImageButtonCreateGroup = new Guna.UI2.WinForms.Guna2ImageButton();
-            listBoxUsers = new ListBox();
             panel1 = new Panel();
             panelShowMessage = new Panel();
             flowLayoutPanelChat = new FlowLayoutPanel();
@@ -58,7 +59,6 @@
             guna2ImageButton1 = new Guna.UI2.WinForms.Guna2ImageButton();
             ImageButtonAudioCall = new Guna.UI2.WinForms.Guna2ImageButton();
             ImageButtonVideoCall = new Guna.UI2.WinForms.Guna2ImageButton();
-            panel2 = new Panel();
             panelTypeMessage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -67,11 +67,11 @@
             panelLeft2.SuspendLayout();
             panelLeftHeader2.SuspendLayout();
             panelLeft1.SuspendLayout();
+            panel2.SuspendLayout();
             panelLeftHeader1.SuspendLayout();
             panel1.SuspendLayout();
             panelShowMessage.SuspendLayout();
             topPanel.SuspendLayout();
-            panel2.SuspendLayout();
             SuspendLayout();
             // 
             // txtMessage
@@ -106,7 +106,7 @@
             ImageButtonEmojis.Location = new Point(13, 15);
             ImageButtonEmojis.Name = "ImageButtonEmojis";
             ImageButtonEmojis.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonEmojis.ShadowDecoration.CustomizableEdges = customizableEdges8;
+            ImageButtonEmojis.ShadowDecoration.CustomizableEdges = customizableEdges1;
             ImageButtonEmojis.Size = new Size(38, 65);
             ImageButtonEmojis.TabIndex = 6;
             // 
@@ -121,7 +121,7 @@
             ImageButtonAttachment.Location = new Point(62, 15);
             ImageButtonAttachment.Name = "ImageButtonAttachment";
             ImageButtonAttachment.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonAttachment.ShadowDecoration.CustomizableEdges = customizableEdges9;
+            ImageButtonAttachment.ShadowDecoration.CustomizableEdges = customizableEdges2;
             ImageButtonAttachment.Size = new Size(37, 65);
             ImageButtonAttachment.TabIndex = 5;
             ImageButtonAttachment.Click += ImageButtonAttachment_Click;
@@ -139,7 +139,7 @@
             ImageButtonSend.Location = new Point(748, 15);
             ImageButtonSend.Name = "ImageButtonSend";
             ImageButtonSend.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonSend.ShadowDecoration.CustomizableEdges = customizableEdges10;
+            ImageButtonSend.ShadowDecoration.CustomizableEdges = customizableEdges3;
             ImageButtonSend.Size = new Size(46, 65);
             ImageButtonSend.TabIndex = 4;
             ImageButtonSend.Click += ImageButtonSend_Click;
@@ -213,6 +213,30 @@
             panelLeft1.Size = new Size(208, 565);
             panelLeft1.TabIndex = 4;
             // 
+            // panel2
+            // 
+            panel2.Controls.Add(listBoxUsers);
+            panel2.Dock = DockStyle.Fill;
+            panel2.Location = new Point(0, 49);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(208, 516);
+            panel2.TabIndex = 1;
+            // 
+            // listBoxUsers
+            // 
+            listBoxUsers.BackColor = Color.DarkGray;
+            listBoxUsers.BorderStyle = BorderStyle.FixedSingle;
+            listBoxUsers.Dock = DockStyle.Fill;
+            listBoxUsers.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            listBoxUsers.ForeColor = SystemColors.InactiveCaptionText;
+            listBoxUsers.FormattingEnabled = true;
+            listBoxUsers.ItemHeight = 25;
+            listBoxUsers.Location = new Point(0, 0);
+            listBoxUsers.Name = "listBoxUsers";
+            listBoxUsers.Size = new Size(208, 516);
+            listBoxUsers.TabIndex = 0;
+            listBoxUsers.SelectedIndexChanged += listBoxUsers_SelectedIndexChanged;
+            // 
             // panelLeftHeader1
             // 
             panelLeftHeader1.Controls.Add(guna2HtmlLabel1);
@@ -243,28 +267,13 @@
             ImageButtonCreateGroup.ImageOffset = new Point(0, 0);
             ImageButtonCreateGroup.ImageRotate = 0F;
             ImageButtonCreateGroup.ImageSize = new Size(30, 30);
-            ImageButtonCreateGroup.Location = new Point(126, 14);
+            ImageButtonCreateGroup.Location = new Point(150, 17);
             ImageButtonCreateGroup.Name = "ImageButtonCreateGroup";
             ImageButtonCreateGroup.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonCreateGroup.ShadowDecoration.CustomizableEdges = customizableEdges11;
+            ImageButtonCreateGroup.ShadowDecoration.CustomizableEdges = customizableEdges4;
             ImageButtonCreateGroup.Size = new Size(42, 29);
             ImageButtonCreateGroup.TabIndex = 2;
             ImageButtonCreateGroup.Click += ImageButtonCreateGroup_Click;
-            // 
-            // listBoxUsers
-            // 
-            listBoxUsers.BackColor = Color.DarkGray;
-            listBoxUsers.BorderStyle = BorderStyle.FixedSingle;
-            listBoxUsers.Dock = DockStyle.Fill;
-            listBoxUsers.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            listBoxUsers.ForeColor = SystemColors.InactiveCaptionText;
-            listBoxUsers.FormattingEnabled = true;
-            listBoxUsers.ItemHeight = 25;
-            listBoxUsers.Location = new Point(0, 0);
-            listBoxUsers.Name = "listBoxUsers";
-            listBoxUsers.Size = new Size(208, 516);
-            listBoxUsers.TabIndex = 0;
-            listBoxUsers.SelectedIndexChanged += listBoxUsers_SelectedIndexChanged;
             // 
             // panel1
             // 
@@ -321,7 +330,7 @@
             guna2ImageButton1.Location = new Point(746, 6);
             guna2ImageButton1.Name = "guna2ImageButton1";
             guna2ImageButton1.PressedState.ImageSize = new Size(64, 64);
-            guna2ImageButton1.ShadowDecoration.CustomizableEdges = customizableEdges12;
+            guna2ImageButton1.ShadowDecoration.CustomizableEdges = customizableEdges5;
             guna2ImageButton1.Size = new Size(36, 40);
             guna2ImageButton1.TabIndex = 0;
             // 
@@ -337,7 +346,7 @@
             ImageButtonAudioCall.Location = new Point(690, 3);
             ImageButtonAudioCall.Name = "ImageButtonAudioCall";
             ImageButtonAudioCall.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonAudioCall.ShadowDecoration.CustomizableEdges = customizableEdges13;
+            ImageButtonAudioCall.ShadowDecoration.CustomizableEdges = customizableEdges6;
             ImageButtonAudioCall.Size = new Size(36, 43);
             ImageButtonAudioCall.TabIndex = 0;
             // 
@@ -354,18 +363,9 @@
             ImageButtonVideoCall.Location = new Point(625, 3);
             ImageButtonVideoCall.Name = "ImageButtonVideoCall";
             ImageButtonVideoCall.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonVideoCall.ShadowDecoration.CustomizableEdges = customizableEdges14;
+            ImageButtonVideoCall.ShadowDecoration.CustomizableEdges = customizableEdges7;
             ImageButtonVideoCall.Size = new Size(36, 43);
             ImageButtonVideoCall.TabIndex = 0;
-            // 
-            // panel2
-            // 
-            panel2.Controls.Add(listBoxUsers);
-            panel2.Dock = DockStyle.Fill;
-            panel2.Location = new Point(0, 49);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(208, 516);
-            panel2.TabIndex = 1;
             // 
             // ChatForm
             // 
@@ -392,12 +392,12 @@
             panelLeftHeader2.ResumeLayout(false);
             panelLeftHeader2.PerformLayout();
             panelLeft1.ResumeLayout(false);
+            panel2.ResumeLayout(false);
             panelLeftHeader1.ResumeLayout(false);
             panelLeftHeader1.PerformLayout();
             panel1.ResumeLayout(false);
             panelShowMessage.ResumeLayout(false);
             topPanel.ResumeLayout(false);
-            panel2.ResumeLayout(false);
             ResumeLayout(false);
         }
 

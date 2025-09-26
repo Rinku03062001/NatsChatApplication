@@ -46,12 +46,11 @@
             lstGroups = new ListBox();
             panelLeftHeader2 = new Panel();
             lblChatTitle = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            ImageButtonCreateGroup = new Guna.UI2.WinForms.Guna2ImageButton();
             panelLeft1 = new Panel();
-            panel2 = new Panel();
             listBoxUsers = new ListBox();
             panelLeftHeader1 = new Panel();
             guna2HtmlLabel1 = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            ImageButtonCreateGroup = new Guna.UI2.WinForms.Guna2ImageButton();
             panel1 = new Panel();
             panelShowMessage = new Panel();
             flowLayoutPanelChat = new FlowLayoutPanel();
@@ -67,7 +66,6 @@
             panelLeft2.SuspendLayout();
             panelLeftHeader2.SuspendLayout();
             panelLeft1.SuspendLayout();
-            panel2.SuspendLayout();
             panelLeftHeader1.SuspendLayout();
             panel1.SuspendLayout();
             panelShowMessage.SuspendLayout();
@@ -167,10 +165,10 @@
             // 
             panelLeft2.Controls.Add(lstGroups);
             panelLeft2.Controls.Add(panelLeftHeader2);
-            panelLeft2.Dock = DockStyle.Fill;
-            panelLeft2.Location = new Point(208, 0);
+            panelLeft2.Dock = DockStyle.Right;
+            panelLeft2.Location = new Point(198, 0);
             panelLeft2.Name = "panelLeft2";
-            panelLeft2.Size = new Size(165, 565);
+            panelLeft2.Size = new Size(175, 565);
             panelLeft2.TabIndex = 5;
             // 
             // lstGroups
@@ -180,17 +178,19 @@
             lstGroups.FormattingEnabled = true;
             lstGroups.Location = new Point(0, 49);
             lstGroups.Name = "lstGroups";
-            lstGroups.Size = new Size(165, 516);
+            lstGroups.Size = new Size(175, 516);
             lstGroups.TabIndex = 0;
+            lstGroups.SelectedIndexChanged += lstGroups_SelectedIndexChanged;
             // 
             // panelLeftHeader2
             // 
             panelLeftHeader2.BackColor = Color.Transparent;
             panelLeftHeader2.Controls.Add(lblChatTitle);
+            panelLeftHeader2.Controls.Add(ImageButtonCreateGroup);
             panelLeftHeader2.Dock = DockStyle.Top;
             panelLeftHeader2.Location = new Point(0, 0);
             panelLeftHeader2.Name = "panelLeftHeader2";
-            panelLeftHeader2.Size = new Size(165, 49);
+            panelLeftHeader2.Size = new Size(175, 49);
             panelLeftHeader2.TabIndex = 1;
             // 
             // lblChatTitle
@@ -198,30 +198,38 @@
             lblChatTitle.BackColor = Color.Transparent;
             lblChatTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblChatTitle.ForeColor = Color.Blue;
-            lblChatTitle.Location = new Point(41, 6);
+            lblChatTitle.Location = new Point(3, 9);
             lblChatTitle.Name = "lblChatTitle";
             lblChatTitle.Size = new Size(70, 30);
             lblChatTitle.TabIndex = 3;
             lblChatTitle.Text = "Groups\r\n";
             // 
+            // ImageButtonCreateGroup
+            // 
+            ImageButtonCreateGroup.BackColor = Color.Transparent;
+            ImageButtonCreateGroup.CheckedState.ImageSize = new Size(64, 64);
+            ImageButtonCreateGroup.HoverState.ImageSize = new Size(64, 64);
+            ImageButtonCreateGroup.Image = (Image)resources.GetObject("ImageButtonCreateGroup.Image");
+            ImageButtonCreateGroup.ImageOffset = new Point(0, 0);
+            ImageButtonCreateGroup.ImageRotate = 0F;
+            ImageButtonCreateGroup.ImageSize = new Size(30, 30);
+            ImageButtonCreateGroup.Location = new Point(130, 14);
+            ImageButtonCreateGroup.Name = "ImageButtonCreateGroup";
+            ImageButtonCreateGroup.PressedState.ImageSize = new Size(64, 64);
+            ImageButtonCreateGroup.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            ImageButtonCreateGroup.Size = new Size(42, 29);
+            ImageButtonCreateGroup.TabIndex = 2;
+            ImageButtonCreateGroup.Click += ImageButtonCreateGroup_Click;
+            // 
             // panelLeft1
             // 
-            panelLeft1.Controls.Add(panel2);
+            panelLeft1.Controls.Add(listBoxUsers);
             panelLeft1.Controls.Add(panelLeftHeader1);
-            panelLeft1.Dock = DockStyle.Left;
+            panelLeft1.Dock = DockStyle.Fill;
             panelLeft1.Location = new Point(0, 0);
             panelLeft1.Name = "panelLeft1";
-            panelLeft1.Size = new Size(208, 565);
+            panelLeft1.Size = new Size(373, 565);
             panelLeft1.TabIndex = 4;
-            // 
-            // panel2
-            // 
-            panel2.Controls.Add(listBoxUsers);
-            panel2.Dock = DockStyle.Fill;
-            panel2.Location = new Point(0, 49);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(208, 516);
-            panel2.TabIndex = 1;
             // 
             // listBoxUsers
             // 
@@ -232,9 +240,9 @@
             listBoxUsers.ForeColor = SystemColors.InactiveCaptionText;
             listBoxUsers.FormattingEnabled = true;
             listBoxUsers.ItemHeight = 25;
-            listBoxUsers.Location = new Point(0, 0);
+            listBoxUsers.Location = new Point(0, 49);
             listBoxUsers.Name = "listBoxUsers";
-            listBoxUsers.Size = new Size(208, 516);
+            listBoxUsers.Size = new Size(373, 516);
             listBoxUsers.TabIndex = 0;
             listBoxUsers.SelectedIndexChanged += listBoxUsers_SelectedIndexChanged;
             // 
@@ -242,11 +250,10 @@
             // 
             panelLeftHeader1.BackColor = Color.OldLace;
             panelLeftHeader1.Controls.Add(guna2HtmlLabel1);
-            panelLeftHeader1.Controls.Add(ImageButtonCreateGroup);
             panelLeftHeader1.Dock = DockStyle.Top;
             panelLeftHeader1.Location = new Point(0, 0);
             panelLeftHeader1.Name = "panelLeftHeader1";
-            panelLeftHeader1.Size = new Size(208, 49);
+            panelLeftHeader1.Size = new Size(373, 49);
             panelLeftHeader1.TabIndex = 0;
             // 
             // guna2HtmlLabel1
@@ -259,23 +266,6 @@
             guna2HtmlLabel1.Size = new Size(87, 37);
             guna2HtmlLabel1.TabIndex = 1;
             guna2HtmlLabel1.Text = "Chats";
-            // 
-            // ImageButtonCreateGroup
-            // 
-            ImageButtonCreateGroup.BackColor = Color.Transparent;
-            ImageButtonCreateGroup.CheckedState.ImageSize = new Size(64, 64);
-            ImageButtonCreateGroup.HoverState.ImageSize = new Size(64, 64);
-            ImageButtonCreateGroup.Image = (Image)resources.GetObject("ImageButtonCreateGroup.Image");
-            ImageButtonCreateGroup.ImageOffset = new Point(0, 0);
-            ImageButtonCreateGroup.ImageRotate = 0F;
-            ImageButtonCreateGroup.ImageSize = new Size(30, 30);
-            ImageButtonCreateGroup.Location = new Point(150, 17);
-            ImageButtonCreateGroup.Name = "ImageButtonCreateGroup";
-            ImageButtonCreateGroup.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonCreateGroup.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            ImageButtonCreateGroup.Size = new Size(42, 29);
-            ImageButtonCreateGroup.TabIndex = 2;
-            ImageButtonCreateGroup.Click += ImageButtonCreateGroup_Click;
             // 
             // panel1
             // 
@@ -377,7 +367,7 @@
             BackColor = Color.LightSkyBlue;
             ClientSize = new Size(1176, 565);
             Controls.Add(splitContainer1);
-            FormBorderStyle = FormBorderStyle.Fixed3D;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "ChatForm";
             SizeGripStyle = SizeGripStyle.Hide;
@@ -394,7 +384,6 @@
             panelLeftHeader2.ResumeLayout(false);
             panelLeftHeader2.PerformLayout();
             panelLeft1.ResumeLayout(false);
-            panel2.ResumeLayout(false);
             panelLeftHeader1.ResumeLayout(false);
             panelLeftHeader1.PerformLayout();
             panel1.ResumeLayout(false);
@@ -426,6 +415,5 @@
         private Panel panelLeftHeader2;
         private Panel panel1;
         private Panel panelShowMessage;
-        private Panel panel2;
     }
 }

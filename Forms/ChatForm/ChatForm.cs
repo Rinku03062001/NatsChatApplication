@@ -20,7 +20,7 @@ namespace ChatAppNats
         private string _selectedUser;
         private int? _selectedUserId;
 
- 
+
 
         public ChatForm(string userName, ILogger logger = null)
         {
@@ -89,42 +89,80 @@ namespace ChatAppNats
             {
                 try
                 {
-                    string fullMessage = $"{_userName}: {message}";
-                    await _chatService.PublishMessageAsync(fullMessage);
-
-                    //lstLogs.Items.Add($"Me: {message}");
-                    DisplayMessage("Me", message);
-
-
-                    // save messages to db
-                    using (var context = new ApplicationDbContext())
+                    if(_selectedGroup != null)
                     {
-                        var senderUser = context.Users.FirstOrDefault(u => u.UserName == _userName);
-                        if (senderUser != null)
+                        string fullMessage = $"{_userName}: {message}";
+
+                        // publish to nats subject for the group
+                        await _chatService.publishGroupMessageAsync(_selectedGroup.GroupId, fullMessage);
+
+                        // Display in chat panel
+                        DisplayMessage("Me", message, false);
+
+                        using(var context = new ApplicationDbContext())
                         {
-                            context.Messages.Add(new Models.Message
+                            var senderUser = context.Users.FirstOrDefault(u => u.UserName == _userName);
+                            if(senderUser != null)
                             {
-                                SenderId = senderUser.UserId,
-                                ReceiverId = _selectedUserId.Value,
-                                Text = message,
-                                SendAt = DateTime.Now,
-                                IsRead = false
-                            });
+                                context.Messages.Add(new Models.Message
+                                {
+                                    SenderId = senderUser.UserId,
+                                    GroupId = _selectedGroup.GroupId,
+                                    Text = message,
+                                    SendAt = DateTime.UtcNow,
+                                    IsRead = true,
+                                });
+                                context.SaveChanges();
+                            }
+                        }
+                        _logger.Information("User {User} sent message='{Message}' to Group {Group}",
+                                _userName, message, _selectedGroup.GroupName);
+                    }
+                    else if(_selectedUserId.HasValue)
+                    {
+                        string fullMessage = $"{_userName}: {message}";
+                        await _chatService.PublishMessageAsync(fullMessage);
+
+                        //lstLogs.Items.Add($"Me: {message}");
+                        DisplayMessage("Me", message);
+
+                        // save messages to db
+                        using (var context = new ApplicationDbContext())
+                        {
+                            var senderUser = context.Users.FirstOrDefault(u => u.UserName == _userName);
+                            if (senderUser != null)
+                            {
+                                context.Messages.Add(new Models.Message
+                                {
+                                    SenderId = senderUser.UserId,
+                                    ReceiverId = _selectedUserId.Value,
+                                    Text = message,
+                                    SendAt = DateTime.Now,
+                                    IsRead = false
+                                });
+                                context.SaveChanges();
+                            }
                         }
 
-                        context.SaveChanges();
+                        _logger.Information("User {User} sent message='{Message}' to UserId {TargetId}",
+                                    _userName, message, _selectedUserId.Value);
                     }
-
-
-                    _logger.Information("User {User} sent message='{Message}' to {Target}", _userName, message, _targetUser);
+                    else
+                    {
+                        // No recipient selected
+                        MessageBox.Show("Please select a user or group to send a message.");
+                        return;
+                    }
 
                     txtMessage.Clear();
                 }
+               
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Error sending message from {User} to {Target}", _userName, _targetUser);
                     MessageBox.Show($"Error sending message: {ex.Message}");
                 }
+
             }
             else
             {
@@ -141,13 +179,13 @@ namespace ChatAppNats
                 string content = rawMessage;
 
                 var parts = rawMessage.Split(new[] { ':' }, 2);
-                if(parts.Length == 2)
+                if (parts.Length == 2)
                 {
                     sender = parts[0].Trim();
                     content = parts[1].Trim();
 
                     // if the sender is me mark it
-                    if(string.Equals(sender, _userName, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(sender, _userName, StringComparison.OrdinalIgnoreCase))
                     {
                         sender = "Me";
                     }
@@ -180,14 +218,6 @@ namespace ChatAppNats
             Application.Exit();
         }
 
-
-
-
-
-        private void OpenFileDialogFor(AttachmentType type)
-        {
-            MessageBox.Show($"You selected {type}");
-        }
 
         private void listBoxUsers_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -372,14 +402,108 @@ namespace ChatAppNats
         }
 
 
+        private Dictionary<string, Group> groupMap = new Dictionary<string, Group>();
         private void LoadGroups()
         {
-            var groups = _createGroupForm.GetUserGroups(_userName);
+            var groupNames = _createGroupForm.GetUserGroups(_userName);
+
+
+            //lstGroups.DataSource = groups;
+            //lstGroups.DisplayMember = "GroupName"; // what will be shown in the listbox
+            //lstGroups.ValueMember = "GroupId";
 
             lstGroups.Items.Clear();
-            foreach (var group in groups)
+            groupMap.Clear();
+
+            //foreach (var group in groups)
+            //{
+            //    lstGroups.Items.Add(group);
+            //}
+            using (var context = new ApplicationDbContext())
             {
-                lstGroups.Items.Add(group);
+                foreach(var name in groupNames)
+                {
+                    var group = context.Groups.FirstOrDefault(g => g.GroupName == name);
+                    if (group != null)
+                    {
+                        lstGroups.Items.Add(name);
+                        groupMap[name] = group;
+                    }
+                }
+            }
+        }
+
+
+        private Group _selectedGroup;
+        private void lstGroups_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstGroups.SelectedItem == null) return;
+
+            string selectedName = lstGroups.SelectedItem.ToString();
+            if (!groupMap.ContainsKey(selectedName)) return;
+
+            _selectedGroup = groupMap[selectedName];
+
+           
+            _logger.Information("{User} selected group {Group}", _userName, _selectedGroup.GroupName);
+
+            // clear old chat
+            flowLayoutPanelChat.Controls.Clear();
+
+
+            // Subscribe to this group's message
+            _chatService.SubscribeDurableGroup(_selectedGroup.GroupId, OnMessageReceived);
+
+            // Load Group Chat Messages
+            LoadGroupChatHistory(_selectedGroup.GroupId);
+        }
+
+
+        private int CurrentUserId;
+        private void LoadGroupChatHistory(int groupId)
+        {
+            try
+            {
+                using (var context = new ApplicationDbContext())
+                {
+                    if(CurrentUserId == 0)
+                    {
+                        var user = context.Users.FirstOrDefault(u => u.UserName == _userName);
+                        if (user != null)
+                        {
+                            CurrentUserId = user.UserId;
+                        }
+                    }
+                    
+
+                    //var group = context.Groups.FirstOrDefault(g => g.GroupId == groupId);
+                    //if (group == null) return;
+
+                    var messages = context.Messages
+                        .Where(m => m.GroupId == groupId)
+                        .OrderBy(m => m.SendAt)
+                        .ToList();
+
+
+                    var userIds = messages.Select(m => m.SenderId).Distinct().ToList();
+                    var userMap = context.Users
+                        .Where(u => userIds.Contains(u.UserId))
+                        .ToDictionary(u => u.UserId, u => u.UserName);
+
+                    foreach(var msg in messages)
+                    {
+                        string senderName = userMap.ContainsKey(msg.SenderId)
+                            ? userMap[msg.SenderId]
+                            : $"User {msg.SenderId}";
+
+                        DisplayMessage(senderName, msg.Text, msg.SenderId == CurrentUserId);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error loading group chat history for {User}", _userName);
+                MessageBox.Show("Error loading group chat history. Check logs.");
             }
         }
     }

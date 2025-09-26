@@ -89,7 +89,7 @@ namespace ChatAppNats
             {
                 try
                 {
-                    if(_selectedGroup != null)
+                    if (_selectedGroup != null)
                     {
                         string fullMessage = $"{_userName}: {message}";
 
@@ -97,12 +97,12 @@ namespace ChatAppNats
                         await _chatService.publishGroupMessageAsync(_selectedGroup.GroupId, fullMessage);
 
                         // Display in chat panel
-                        DisplayMessage("Me", message, false);
+                        DisplayMessage("Me", message, isMe: true);
 
-                        using(var context = new ApplicationDbContext())
+                        using (var context = new ApplicationDbContext())
                         {
                             var senderUser = context.Users.FirstOrDefault(u => u.UserName == _userName);
-                            if(senderUser != null)
+                            if (senderUser != null)
                             {
                                 context.Messages.Add(new Models.Message
                                 {
@@ -118,13 +118,13 @@ namespace ChatAppNats
                         _logger.Information("User {User} sent message='{Message}' to Group {Group}",
                                 _userName, message, _selectedGroup.GroupName);
                     }
-                    else if(_selectedUserId.HasValue)
+                    else if (_selectedUserId.HasValue)
                     {
                         string fullMessage = $"{_userName}: {message}";
                         await _chatService.PublishMessageAsync(fullMessage);
 
                         //lstLogs.Items.Add($"Me: {message}");
-                        DisplayMessage("Me", message);
+                        DisplayMessage("Me", message, isMe: true);
 
                         // save messages to db
                         using (var context = new ApplicationDbContext())
@@ -156,7 +156,7 @@ namespace ChatAppNats
 
                     txtMessage.Clear();
                 }
-               
+
                 catch (Exception ex)
                 {
                     _logger.Error(ex, "Error sending message from {User} to {Target}", _userName, _targetUser);
@@ -199,7 +199,7 @@ namespace ChatAppNats
                 else
                 {
                     //lstLogs.Items.Add(message);
-                    DisplayMessage(sender, content, false);
+                    DisplayMessage(sender, content, isMe: sender == "Me");
                 }
 
                 _logger.Information("User {User} received message='{Message}'", _userName, rawMessage);
@@ -330,7 +330,7 @@ namespace ChatAppNats
         }
 
 
-        private void DisplayMessage(string sender, string content, bool isFile = false)
+        private void DisplayMessage(string sender, string content, bool isMe = false, bool isFile = false)
         {
             Panel msgPanel = new Panel
             {
@@ -421,7 +421,7 @@ namespace ChatAppNats
             //}
             using (var context = new ApplicationDbContext())
             {
-                foreach(var name in groupNames)
+                foreach (var name in groupNames)
                 {
                     var group = context.Groups.FirstOrDefault(g => g.GroupName == name);
                     if (group != null)
@@ -444,7 +444,7 @@ namespace ChatAppNats
 
             _selectedGroup = groupMap[selectedName];
 
-           
+
             _logger.Information("{User} selected group {Group}", _userName, _selectedGroup.GroupName);
 
             // clear old chat
@@ -466,7 +466,7 @@ namespace ChatAppNats
             {
                 using (var context = new ApplicationDbContext())
                 {
-                    if(CurrentUserId == 0)
+                    if (CurrentUserId == 0)
                     {
                         var user = context.Users.FirstOrDefault(u => u.UserName == _userName);
                         if (user != null)
@@ -474,7 +474,7 @@ namespace ChatAppNats
                             CurrentUserId = user.UserId;
                         }
                     }
-                    
+
 
                     //var group = context.Groups.FirstOrDefault(g => g.GroupId == groupId);
                     //if (group == null) return;
@@ -490,13 +490,13 @@ namespace ChatAppNats
                         .Where(u => userIds.Contains(u.UserId))
                         .ToDictionary(u => u.UserId, u => u.UserName);
 
-                    foreach(var msg in messages)
+                    foreach (var msg in messages)
                     {
                         string senderName = userMap.ContainsKey(msg.SenderId)
                             ? userMap[msg.SenderId]
                             : $"User {msg.SenderId}";
 
-                        DisplayMessage(senderName, msg.Text, msg.SenderId == CurrentUserId);
+                        DisplayMessage(senderName, msg.Text, isMe:msg.SenderId == CurrentUserId);
                     }
                 }
             }

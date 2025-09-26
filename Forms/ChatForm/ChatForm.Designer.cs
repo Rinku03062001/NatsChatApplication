@@ -175,7 +175,7 @@
             // 
             // lstGroups
             // 
-            lstGroups.BackColor = Color.LightGray;
+            lstGroups.BackColor = Color.SkyBlue;
             lstGroups.Dock = DockStyle.Fill;
             lstGroups.FormattingEnabled = true;
             lstGroups.Location = new Point(0, 49);
@@ -185,6 +185,7 @@
             // 
             // panelLeftHeader2
             // 
+            panelLeftHeader2.BackColor = Color.Transparent;
             panelLeftHeader2.Controls.Add(lblChatTitle);
             panelLeftHeader2.Dock = DockStyle.Top;
             panelLeftHeader2.Location = new Point(0, 0);
@@ -224,7 +225,7 @@
             // 
             // listBoxUsers
             // 
-            listBoxUsers.BackColor = Color.DarkGray;
+            listBoxUsers.BackColor = SystemColors.GradientInactiveCaption;
             listBoxUsers.BorderStyle = BorderStyle.FixedSingle;
             listBoxUsers.Dock = DockStyle.Fill;
             listBoxUsers.Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -239,6 +240,7 @@
             // 
             // panelLeftHeader1
             // 
+            panelLeftHeader1.BackColor = Color.OldLace;
             panelLeftHeader1.Controls.Add(guna2HtmlLabel1);
             panelLeftHeader1.Controls.Add(ImageButtonCreateGroup);
             panelLeftHeader1.Dock = DockStyle.Top;
@@ -297,7 +299,7 @@
             // flowLayoutPanelChat
             // 
             flowLayoutPanelChat.AutoScroll = true;
-            flowLayoutPanelChat.BackColor = Color.RosyBrown;
+            flowLayoutPanelChat.BackColor = SystemColors.ActiveCaption;
             flowLayoutPanelChat.Dock = DockStyle.Fill;
             flowLayoutPanelChat.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanelChat.Location = new Point(0, 0);
@@ -308,7 +310,7 @@
             // 
             // topPanel
             // 
-            topPanel.BackColor = Color.LightGray;
+            topPanel.BackColor = SystemColors.InactiveCaption;
             topPanel.Controls.Add(guna2ImageButton1);
             topPanel.Controls.Add(ImageButtonAudioCall);
             topPanel.Controls.Add(ImageButtonVideoCall);

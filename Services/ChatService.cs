@@ -17,9 +17,9 @@ namespace ChatAppNats.Services
         private const string StreamName = "Synapse_Publisher";
 
         private readonly string _userName;
-        private readonly string _subjectToPublish;
+        private  string _subjectToPublish;
         private readonly string _subjectToSubscribe;
-        private readonly string _durableName;
+        private  string _durableName;
 
         private readonly ILogger _logger;
 
@@ -100,6 +100,13 @@ namespace ChatAppNats.Services
                 _logger.Error(ex, "Error publishing message by {User} to {Subject}, text={Message}",
                     _userName, _subjectToPublish, message);
             }
+        }
+
+
+        public async Task publishGroupMessageAsync(int groupId, string message)
+        {
+            _subjectToPublish = $"group.{groupId}";
+            await PublishMessageAsync(message);
         }
 
         // Subscriber
@@ -211,6 +218,15 @@ namespace ChatAppNats.Services
             }
         }
 
+
+
+
+        public void SubscribeDurableGroup(int groupId, Action<string> onMessage)
+        {
+            _subjectToPublish = $"group.{groupId}";
+            _durableName = $"durable_{_userName}_{groupId}";
+            SubscribeDurable(onMessage);
+        }
 
 
         public void Dispose()

@@ -13,16 +13,17 @@ namespace ChatAppNats
     {
         private readonly ChatService _chatService;
         private readonly ILogger _logger;
-        private readonly string _userName;
-        private readonly string _targetUser;
+        private readonly string? _userName;
+        private readonly string? _targetUser;
         private readonly CreateGroupForm _createGroupForm;
 
-        private string _selectedUser;
+        private string? _selectedUser;
         private int? _selectedUserId;
 
+        private Dictionary<string, Group> groupMap = new Dictionary<string, Group>();
+        private readonly Dictionary<string, List<string>> _messages = new Dictionary<string, List<string>>();
 
-
-        public ChatForm(string userName, ILogger logger = null)
+        public ChatForm(string? userName, ILogger? logger = null)
         {
             InitializeComponent();
 
@@ -170,6 +171,8 @@ namespace ChatAppNats
             }
         }
 
+
+
         private void OnMessageReceived(string rawMessage)
         {
             try
@@ -191,17 +194,63 @@ namespace ChatAppNats
                     }
                 }
 
-
-                if (flowLayoutPanelChat.InvokeRequired)
+                // Always save messages in memory
+                if(!_messages.ContainsKey(sender))
                 {
-                    flowLayoutPanelChat.Invoke(new Action(() => DisplayMessage(sender, content, false)));
-                }
-                else
-                {
-                    //lstLogs.Items.Add(message);
-                    DisplayMessage(sender, content, isMe: sender == "Me");
+                    _messages[sender] = new List<string>();
                 }
 
+                bool isUserChatActive = _selectedUser != null && string.Equals(_selectedUser, sender, StringComparison.OrdinalIgnoreCase);
+
+
+                if(isUserChatActive || sender == "Me")
+                {
+                    string displaySender = string.Equals(sender, _userName, StringComparison.OrdinalIgnoreCase) ? "Me" : sender;
+                    if (content.StartsWith("FILE:"))
+                    {
+                        // FILE:<filename>:<base64data>
+                        var fileParts = content.Split(new[] { ':' }, 3);
+                        if (fileParts.Length == 3)
+                        {
+                            string fileName = fileParts[1];
+                            string base64Data = fileParts[2];
+
+                            try
+                            {
+                                byte[] fileBytes = Convert.FromBase64String(base64Data);
+
+                                string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
+                                File.WriteAllBytes(filePath, fileBytes);
+
+                                // display in chat
+                                if (flowLayoutPanelChat.InvokeRequired)
+                                {
+                                    flowLayoutPanelChat.Invoke(new Action(() => DisplayMessage(displaySender, filePath, displaySender == "Me", isFile: true)));
+                                }
+                                else
+                                {
+                                    DisplayMessage(displaySender, filePath, displaySender == "Me", isFile: true);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error(ex, "Failed to process received file message.");
+                                throw;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (flowLayoutPanelChat.InvokeRequired)
+                        {
+                            flowLayoutPanelChat.Invoke(new Action(() => DisplayMessage(displaySender, content, displaySender == "Me")));
+                        }
+                        else
+                        {
+                            DisplayMessage(displaySender, content, displaySender == "Me");
+                        }
+                    }
+                }
                 _logger.Information("User {User} received message='{Message}'", _userName, rawMessage);
             }
             catch (Exception ex)
@@ -209,6 +258,9 @@ namespace ChatAppNats
                 _logger.Error(ex, "Error processing received message in ChatForm for {User}", _userName);
             }
         }
+
+
+
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
@@ -219,12 +271,21 @@ namespace ChatAppNats
         }
 
 
+
+
+
         private void listBoxUsers_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBoxUsers.SelectedItems != null)
             {
-                _selectedUserId = (int)listBoxUsers.SelectedValue;
+                _selectedUserId = (int?)listBoxUsers.SelectedValue;
+                _selectedUser = listBoxUsers.Text.Trim().ToLower(); // <-- keep track of target user name
+                
                 _logger.Information("{User} selected chat with {Target}", _userName, _selectedUser);
+
+
+                // update chatservice publish subject dynamically
+                _chatService.SetTargetUser(_selectedUser);
 
                 // cleat old chat display
                 //lstLogs.Items.Clear();
@@ -234,6 +295,7 @@ namespace ChatAppNats
                 LoadChatHistory(_selectedUserId.Value);
             }
         }
+
 
 
         private void LoadChatHistory(int targetUserId)
@@ -264,7 +326,7 @@ namespace ChatAppNats
 
                     foreach (var msg in chats)
                     {
-                        string prefix = msg.SenderId == senderUser.UserId ? "Me" : userMap[msg.SenderId];
+                        string? prefix = msg.SenderId == senderUser.UserId ? "Me" : userMap[msg.SenderId];
                         //lstLogs.Items.Add($"{prefix}: {msg.Text}");
                         DisplayMessage(prefix, msg.Text);
                     }
@@ -277,6 +339,10 @@ namespace ChatAppNats
                 MessageBox.Show("Error loading chat history. Check logs.");
             }
         }
+
+
+
+
 
         private void ImageButtonAttachment_Click(object sender, EventArgs e)
         {
@@ -306,14 +372,14 @@ namespace ChatAppNats
                     }
 
                     // show in chat panel
-                    DisplayMessage("Me", sourceFile, true);
+                    DisplayMessage("Me", sourceFile, false, true);
 
                     // send to receiver
                     SendFileToReceiver(sourceFile, fileName);
 
 
                     // Show in lstLogs
-                    //lstLogs.Items.Add($"You sent : {fileName}");
+                    //flowLayoutPanelChat.Controls.Add($"You sent : {fileName}");
 
 
                 }
@@ -322,11 +388,40 @@ namespace ChatAppNats
 
 
 
-        private void SendFileToReceiver(string filePath, string fileName)
+        private async void SendFileToReceiver(string filePath, string fileName)
         {
-            MessageBox.Show($"Sending File '{fileName}' to receiver... ");
+            try
+            {
+                byte[] fileBytes = File.ReadAllBytes(filePath);
+                string base64Data = Convert.ToBase64String(fileBytes);
 
-            byte[] fileBytes = File.ReadAllBytes(filePath);
+                string message = $"FILE:{fileName}:{base64Data}";
+
+                string finalMessage = $"{_userName}: {message}";
+
+                if (_selectedGroup != null)
+                {
+                    // send to group
+                    await _chatService.publishGroupMessageAsync(_selectedGroup.GroupId, finalMessage);
+                }
+                else if (_selectedUser != null)
+                {
+                    // Send private
+                    await _chatService.PublishMessageAsync(_selectedUser, finalMessage);
+                }
+                else
+                {
+                    MessageBox.Show("No receiver selected");
+                }
+
+                _logger.Information("User {User} sent file '{FileName}' successfully", _userName, fileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error sending file: " + ex.Message);
+                _logger.Error(ex, "Error sending file '{FileName}' by {User}", fileName, _userName);
+            }
+            
         }
 
 
@@ -402,7 +497,7 @@ namespace ChatAppNats
         }
 
 
-        private Dictionary<string, Group> groupMap = new Dictionary<string, Group>();
+        
         private void LoadGroups()
         {
             var groupNames = _createGroupForm.GetUserGroups(_userName);
@@ -439,7 +534,7 @@ namespace ChatAppNats
         {
             if (lstGroups.SelectedItem == null) return;
 
-            string selectedName = lstGroups.SelectedItem.ToString();
+            string? selectedName = lstGroups.SelectedItem.ToString();
             if (!groupMap.ContainsKey(selectedName)) return;
 
             _selectedGroup = groupMap[selectedName];
@@ -492,7 +587,7 @@ namespace ChatAppNats
 
                     foreach (var msg in messages)
                     {
-                        string senderName = userMap.ContainsKey(msg.SenderId)
+                        string? senderName = userMap.ContainsKey(msg.SenderId)
                             ? userMap[msg.SenderId]
                             : $"User {msg.SenderId}";
 

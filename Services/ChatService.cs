@@ -229,6 +229,14 @@ namespace ChatAppNats.Services
         }
 
 
+
+        public void SetTargetUser(string targetUser)
+        {
+            _subjectToPublish = $"Synapse_Publisher.{targetUser}";
+            _logger.Information("Target user changed for {User}, new target={Target}, publish={Publish}",
+                _userName, targetUser, _subjectToPublish);
+        }
+
         public void Dispose()
         {
             _logger.Information("Closing connection for {User}", _userName);

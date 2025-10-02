@@ -2,10 +2,7 @@
 using NATS.Client;
 using NATS.Client.JetStream;
 using Serilog;
-using System;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace ChatAppNats.Services
 {
@@ -17,9 +14,9 @@ namespace ChatAppNats.Services
         private const string StreamName = "Synapse_Publisher";
 
         private readonly string _userName;
-        private  string _subjectToPublish;
+        private string _subjectToPublish;
         private readonly string _subjectToSubscribe;
-        private  string _durableName;
+        private string _durableName;
 
         private readonly ILogger _logger;
 
@@ -109,114 +106,131 @@ namespace ChatAppNats.Services
             await PublishMessageAsync(message);
         }
 
-        // Subscriber
-        //public void Subscribe(Action<string> onMessage)
+
+
+        public void SubscribeDurable(Action<string> onMessage)
+        {
+            _logger.Information("Setting up JetStream durable push subscriber for {User}, subject={Subject}",
+                _userName, _subjectToSubscribe);
+
+            try
+            {
+                // Generate a unique deliver subject for push consumer
+                string deliverSubject = $"deliver.{_userName}.{Guid.NewGuid()}";
+
+                // Configure the consumer as a push consumer
+                var consumerConfig = ConsumerConfiguration.Builder()
+                    .WithDurable(_durableName)              // unique durable per user
+                    .WithDeliverSubject(deliverSubject)     // required for push consumer
+                    .WithDeliverPolicy(DeliverPolicy.New)   // deliver new missed messages
+                    .WithFilterSubject(_subjectToSubscribe) // filter to this subject
+                    .WithAckPolicy(AckPolicy.Explicit)      // explicit ACK required
+                    .Build();
+
+                // Add or update the consumer in JetStream
+                _jsm.AddOrUpdateConsumer(StreamName, consumerConfig);
+                _logger.Information("Consumer configured as push for {User} with durable {Durable}", _userName, _durableName);
+
+                // Bind push subscription to this durable
+                var pso = PushSubscribeOptions.BindTo(StreamName, _durableName);
+
+                // Subscribe with a callback to handle incoming messages
+                var sub = _js.PushSubscribeAsync(_subjectToSubscribe, (sender, args) =>
+                {
+                    args.Message.Ack(); // Acknowledge immediately to avoid redelivery
+                    try
+                    {
+                        string text = Encoding.UTF8.GetString(args.Message.Data);
+                        args.Message.Ack(); // acknowledge message
+
+                        _logger.Information("User {User} received message='{Message}'", _userName, text);
+
+                        if (onMessage != null && Application.OpenForms.Count > 0)
+                        {
+                            var form = Application.OpenForms[0];
+                            form.Invoke(() => onMessage(text)); // safely update UI
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Error handling incoming message for {User}", _userName);
+                    }
+                }, false, pso);
+
+                _logger.Information("Push subscription active for {User}", _userName);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "JetStream push subscribe failed for {User} on subject {Subject}",
+                    _userName, _subjectToSubscribe);
+            }
+        }
+
+
+
+
+
+        //public void SubscribeDurable(Action<string> onMessage)
         //{
-        //    _logger.Information("Setting up subscriber for {User}, subject={Subject}, durable={Durable}",
-        //        _userName, _subjectToSubscribe, _durableName);
-
-        //    var consumerConfig = ConsumerConfiguration.Builder()
-        //        .WithFilterSubject(_subjectToSubscribe)
-        //        .WithDurable(_durableName)
-        //        .WithDeliverPolicy(DeliverPolicy.All)
-        //        .WithAckPolicy(AckPolicy.Explicit)
-        //        .Build();
+        //    _logger.Information("Setting up JetStream durable push subscriber for {User}, subject={Subject}",
+        //        _userName, _subjectToSubscribe);
 
         //    try
         //    {
+        //        // Generate a unique deliver subject for push consumer
+        //        string deliverSubject = $"deliver.{_userName}.{Guid.NewGuid()}";
+
+        //        // Configure the consumer as a push consumer
+        //        var consumerConfig = ConsumerConfiguration.Builder()
+        //            .WithDurable(_durableName)              // unique durable per user
+        //            .WithDeliverSubject(deliverSubject)     // required for push consumer
+        //            .WithDeliverPolicy(DeliverPolicy.New)   // deliver all missed messages
+        //            .WithAckPolicy(AckPolicy.Explicit)      // explicit ACK required
+        //            .Build();
+
+        //        // Add or update the consumer in JetStream
         //        _jsm.AddOrUpdateConsumer(StreamName, consumerConfig);
-        //        _logger.Debug("Consumer durable {Durable} configured", _durableName);
-        //    }
-        //    catch (NATSJetStreamException ex)
-        //    {
-        //        _logger.Error(ex, "Consumer setup failed for durable {Durable}", _durableName);
-        //    }
+        //        _logger.Information("Consumer configured as push for {User} with durable {Durable}", _userName, _durableName);
 
-        //    PullSubscribeOptions pso = PullSubscribeOptions.BindTo(StreamName, _durableName);
+        //        // Bind push subscription to this durable
+        //        var pso = PushSubscribeOptions.BindTo(StreamName, _durableName);
 
-        //    try
-        //    {
-        //        var sub = _js.PullSubscribe(_subjectToSubscribe, pso);
-        //        _logger.Information("Subscribed successfully to {Subject} with durable {Durable}",
-        //            _subjectToSubscribe, _durableName);
-
-        //        Task.Run(async () =>
+        //        // Subscribe with a callback to handle incoming messages
+        //        var sub = _js.PushSubscribeAsync(_subjectToSubscribe, (sender, args) =>
         //        {
-        //            while (true)
+        //            try
         //            {
-        //                try
-        //                {
-        //                    var messages = sub.Fetch(10, 1000);
-        //                    foreach (var msg in messages)
-        //                    {
-        //                        var text = Encoding.UTF8.GetString(msg.Data);
-        //                        _logger.Information("User {User} received message='{Message}' from subject={Subject}",
-        //                            _userName, text, _subjectToSubscribe);
+        //                string text = Encoding.UTF8.GetString(args.Message.Data);
+        //                args.Message.Ack(); // acknowledge message
 
-        //                        msg.Ack();
+        //                _logger.Information("User {User} received message='{Message}'", _userName, text);
 
-        //                        if (onMessage != null && Application.OpenForms.Count > 0)
-        //                        {
-        //                            var form = Application.OpenForms[0];
-        //                            form.Invoke(() => onMessage(text));
-        //                        }
-        //                    }
-        //                }
-        //                catch (Exception ex)
+        //                if (onMessage != null && Application.OpenForms.Count > 0)
         //                {
-        //                    _logger.Error(ex, "Error pulling messages for {User}", _userName);
+        //                    var form = Application.OpenForms[0];
+        //                    form.Invoke(() => onMessage(text)); // safely update UI
         //                }
-        //                await Task.Delay(500);
         //            }
-        //        });
+        //            catch (Exception ex)
+        //            {
+        //                _logger.Error(ex, "Error handling incoming message for {User}", _userName);
+        //            }
+        //        }, false, pso);
+
+        //        _logger.Information("Push subscription active for {User}", _userName);
         //    }
         //    catch (Exception ex)
         //    {
-        //        _logger.Error(ex, "Subscribe failed for {User} on subject {Subject}",
+        //        _logger.Error(ex, "JetStream push subscribe failed for {User} on subject {Subject}",
         //            _userName, _subjectToSubscribe);
         //    }
         //}
 
 
 
-        public void SubscribeDurable(Action<string> onMessage)
-        {
-            _logger.Information("Setting up JetStream durable subscriber for {User}, subject={Subject}, durable={Durable}",
-                _userName, _subjectToSubscribe, _durableName);
 
-            try
-            {
-                var consumerConfig = ConsumerConfiguration.Builder()
-                    .WithDurable(_durableName)
-                    .WithDeliverPolicy(DeliverPolicy.New) // only new messages
-                    .WithAckPolicy(AckPolicy.Explicit)
-                    .Build();
 
-                _jsm.AddOrUpdateConsumer(StreamName, consumerConfig);
 
-                var pso = PushSubscribeOptions.BindTo(StreamName, _durableName);
-
-                var sub = _js.PushSubscribeAsync(_subjectToSubscribe, (sender, args) =>
-                {
-                    var text = Encoding.UTF8.GetString(args.Message.Data);
-                    _logger.Information("User {User} received message='{Message}'", _userName, text);
-                    args.Message.Ack();
-
-                    if (onMessage != null && Application.OpenForms.Count > 0)
-                    {
-                        var form = Application.OpenForms[0];
-                        form.Invoke(() => onMessage(text));
-                    }
-                }, false, pso);
-
-                _logger.Information("JetStream durable push subscription active for {User}", _userName);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "JetStream durable subscribe failed for {User} on subject {Subject}",
-                    _userName, _subjectToSubscribe);
-            }
-        }
 
 
 

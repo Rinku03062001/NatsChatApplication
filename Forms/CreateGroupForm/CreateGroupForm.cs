@@ -160,10 +160,10 @@ namespace ChatAppNats
 
 
         // Send notification to user
-        private void SendGroupNotification(string userName, string groupName)
+        private async void SendGroupNotification(string userName, string groupName)
         {
             string message = $"You are added to '{groupName}' group.";
-            _chatService.PublishMessageAsync(userName, message);
+            await _chatService.PublishMessageAsync(userName, message);
         }
 
 
@@ -220,7 +220,7 @@ namespace ChatAppNats
 
         private void clbUsers_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            string user = clbUsers.Items[e.Index].ToString();
+            string? user = clbUsers.Items[e.Index].ToString();
 
             if (e.NewValue == CheckState.Checked)
             {

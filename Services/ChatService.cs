@@ -122,7 +122,7 @@ namespace ChatAppNats.Services
                 var consumerConfig = ConsumerConfiguration.Builder()
                     .WithDurable(_durableName)              // unique durable per user
                     .WithDeliverSubject(deliverSubject)     // required for push consumer
-                    .WithDeliverPolicy(DeliverPolicy.New)   // deliver new missed messages
+                    .WithDeliverPolicy(DeliverPolicy.New)   // deliver all missed messages
                     .WithFilterSubject(_subjectToSubscribe) // filter to this subject
                     .WithAckPolicy(AckPolicy.Explicit)      // explicit ACK required
                     .Build();
@@ -165,75 +165,6 @@ namespace ChatAppNats.Services
                     _userName, _subjectToSubscribe);
             }
         }
-
-
-
-
-
-        //public void SubscribeDurable(Action<string> onMessage)
-        //{
-        //    _logger.Information("Setting up JetStream durable push subscriber for {User}, subject={Subject}",
-        //        _userName, _subjectToSubscribe);
-
-        //    try
-        //    {
-        //        // Generate a unique deliver subject for push consumer
-        //        string deliverSubject = $"deliver.{_userName}.{Guid.NewGuid()}";
-
-        //        // Configure the consumer as a push consumer
-        //        var consumerConfig = ConsumerConfiguration.Builder()
-        //            .WithDurable(_durableName)              // unique durable per user
-        //            .WithDeliverSubject(deliverSubject)     // required for push consumer
-        //            .WithDeliverPolicy(DeliverPolicy.New)   // deliver all missed messages
-        //            .WithAckPolicy(AckPolicy.Explicit)      // explicit ACK required
-        //            .Build();
-
-        //        // Add or update the consumer in JetStream
-        //        _jsm.AddOrUpdateConsumer(StreamName, consumerConfig);
-        //        _logger.Information("Consumer configured as push for {User} with durable {Durable}", _userName, _durableName);
-
-        //        // Bind push subscription to this durable
-        //        var pso = PushSubscribeOptions.BindTo(StreamName, _durableName);
-
-        //        // Subscribe with a callback to handle incoming messages
-        //        var sub = _js.PushSubscribeAsync(_subjectToSubscribe, (sender, args) =>
-        //        {
-        //            try
-        //            {
-        //                string text = Encoding.UTF8.GetString(args.Message.Data);
-        //                args.Message.Ack(); // acknowledge message
-
-        //                _logger.Information("User {User} received message='{Message}'", _userName, text);
-
-        //                if (onMessage != null && Application.OpenForms.Count > 0)
-        //                {
-        //                    var form = Application.OpenForms[0];
-        //                    form.Invoke(() => onMessage(text)); // safely update UI
-        //                }
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                _logger.Error(ex, "Error handling incoming message for {User}", _userName);
-        //            }
-        //        }, false, pso);
-
-        //        _logger.Information("Push subscription active for {User}", _userName);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.Error(ex, "JetStream push subscribe failed for {User} on subject {Subject}",
-        //            _userName, _subjectToSubscribe);
-        //    }
-        //}
-
-
-
-
-
-
-
-
-
 
         public void SubscribeDurableGroup(int groupId, Action<string> onMessage)
         {

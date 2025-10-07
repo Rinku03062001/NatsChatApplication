@@ -1,4 +1,5 @@
-﻿using ChatAppNats.Data;
+﻿
+using ChatAppNats.Data;
 using ChatAppNats.Models;
 using ChatAppNats.Services;
 using Serilog;
@@ -300,7 +301,7 @@ namespace ChatAppNats
                         .ToList();
 
                     var userIds = chats.Select(c => c.SenderId).Distinct().ToList();
-                    
+
 
                     var userMap = context.Users
                         .Where(u => userIds.Contains(u.UserId))
@@ -616,7 +617,7 @@ namespace ChatAppNats
             }
         }
 
-       
+
 
         private void ImageButtonCreateGroup_Click(object sender, EventArgs e)
         {
@@ -625,7 +626,7 @@ namespace ChatAppNats
             createGroupForm.ShowDialog();
         }
 
-       
+
 
         private void lstGroups_SelectedIndexChanged(object sender, EventArgs e)
         {

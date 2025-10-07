@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChatAppNats.Models
+﻿namespace ChatAppNats.Models
 {
     public class Message
     {
@@ -16,9 +10,21 @@ namespace ChatAppNats.Models
 
         // for group chats
         public int? GroupId { get; set; }
-
         public string? Text { get; set; }
         public DateTime SendAt { get; set; } = DateTime.Now;
         public bool IsRead { get; set; } = false;
+
+        public bool IsDeleted { get; set; } = false;
+
+        //public MessageStatus Status { get; set; } = MessageStatus.Pending;
     }
+
+
+    //public enum MessageStatus
+    //{
+    //    Pending,
+    //    Sent,
+    //    Delivered,
+    //    Read
+    //}
 }

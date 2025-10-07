@@ -10,7 +10,7 @@ namespace ChatAppNats.Data
 {
     public class ApplicationDbContext : DbContext
     {
-        public DbSet<User> Users {  get; set; }
+        public DbSet<User> Users { get; set; }
         public DbSet<Models.Message> Messages { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupMember> GroupMembers { get; set; }

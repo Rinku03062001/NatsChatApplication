@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Data.SqlClient;
 using NATS.Client;
 using NATS.Client.JetStream;
 using Serilog;
@@ -19,6 +20,7 @@ namespace ChatAppNats.Services
         private string _durableName;
 
         private readonly ILogger _logger;
+        private static string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
 
         public ChatService(string userName, string targetUser, ILogger logger = null)
         {
@@ -180,6 +182,19 @@ namespace ChatAppNats.Services
             _subjectToPublish = $"Synapse_Publisher.{targetUser}";
             _logger.Information("Target user changed for {User}, new target={Target}, publish={Publish}",
                 _userName, targetUser, _subjectToPublish);
+        }
+
+
+
+        public static void MarkMessageAsDeleted(int messageId)
+        {
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                var cmd = new SqlCommand("UPDATE Messages SET IsDeleted = 1 WHERE MessageId = @MessageId", conn);
+                cmd.Parameters.AddWithValue("@MessageId", messageId);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public void Dispose()

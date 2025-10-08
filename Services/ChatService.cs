@@ -20,7 +20,15 @@ namespace ChatAppNats.Services
         private string _durableName;
 
         private readonly ILogger _logger;
-        private static string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
+        //private static string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
+        private static string connectionString = @"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
+                                        Database=SynapseDB;
+                                        User Id=Rinku2001;
+                                        Password=Rin-#KU29%;
+                                        TrustServerCertificate=True;
+                                        Encrypt=True;
+                                        Connect Timeout=60;";
+
 
         public ChatService(string userName, string targetUser, ILogger logger = null)
         {

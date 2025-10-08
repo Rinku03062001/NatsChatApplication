@@ -14,7 +14,6 @@
         public DateTime SendAt { get; set; } = DateTime.Now;
         public bool IsRead { get; set; } = false;
 
-        public bool IsDeleted { get; set; } = false;
 
         //public MessageStatus Status { get; set; } = MessageStatus.Pending;
     }

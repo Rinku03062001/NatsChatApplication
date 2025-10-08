@@ -17,8 +17,21 @@ namespace ChatAppNats.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True");
-            //optionsBuilder.UseSqlServer(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\ChatAppDB.mdf;Integrated Security=True;Connect Timeout=30");
+            //optionsBuilder.UseSqlServer(@"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True");
+            optionsBuilder.UseSqlServer(@"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
+                                        Database=SynapseDB;
+                                        User Id=Rinku2001;
+                                        Password=Rin-#KU29%;
+                                        TrustServerCertificate=True;
+                                        Encrypt=True;
+                                        Connect Timeout=60;"
+                                        //sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+                                        //maxRetryCount: 5,              // Number of retries
+                                        //maxRetryDelay: TimeSpan.FromSeconds(10), // Delay between retries
+                                        //errorNumbersToAdd: null)
+                                       );
+                                        
+                                        
         }
     }
 }

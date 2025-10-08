@@ -1,4 +1,5 @@
 
+using ChatAppNats.Data;
 using Microsoft.VisualBasic;
 using Serilog;
 using System.IO;
@@ -35,6 +36,11 @@ namespace ChatAppNats
                 // To customize application configuration such as set high DPI settings or default font,
                 // see https://aka.ms/applicationconfiguration.
                 ApplicationConfiguration.Initialize();
+                //using (var context = new ApplicationDbContext())
+                //{
+                //    var canConnect = context.Database.CanConnect();
+                //    Console.WriteLine(canConnect ? "Connected!" : "Cannot connect!");
+                //}
 
                 RegisterForm registerForm = new RegisterForm();
                 Application.Run(new RegisterForm());

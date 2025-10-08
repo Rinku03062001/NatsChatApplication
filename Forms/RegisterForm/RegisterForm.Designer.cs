@@ -105,16 +105,17 @@
             txtUsername.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
             txtUsername.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtUsername.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtUsername.Font = new Font("Segoe UI", 9F);
+            txtUsername.Font = new Font("Calisto MT", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            txtUsername.ForeColor = Color.Black;
             txtUsername.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtUsername.Location = new Point(834, 242);
+            txtUsername.Location = new Point(807, 242);
             txtUsername.Margin = new Padding(3, 4, 3, 4);
             txtUsername.Name = "txtUsername";
             txtUsername.PlaceholderForeColor = Color.Gray;
             txtUsername.PlaceholderText = "Enter Your Username";
             txtUsername.SelectedText = "";
             txtUsername.ShadowDecoration.CustomizableEdges = customizableEdges2;
-            txtUsername.Size = new Size(218, 41);
+            txtUsername.Size = new Size(245, 37);
             txtUsername.TabIndex = 4;
             // 
             // txtEmail
@@ -126,16 +127,17 @@
             txtEmail.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
             txtEmail.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtEmail.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtEmail.Font = new Font("Segoe UI", 9F);
+            txtEmail.Font = new Font("Calisto MT", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            txtEmail.ForeColor = Color.Black;
             txtEmail.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtEmail.Location = new Point(834, 301);
+            txtEmail.Location = new Point(807, 301);
             txtEmail.Margin = new Padding(3, 4, 3, 4);
             txtEmail.Name = "txtEmail";
             txtEmail.PlaceholderForeColor = Color.Gray;
             txtEmail.PlaceholderText = "Enter Your Email";
             txtEmail.SelectedText = "";
             txtEmail.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            txtEmail.Size = new Size(218, 41);
+            txtEmail.Size = new Size(245, 37);
             txtEmail.TabIndex = 5;
             // 
             // txtPassword
@@ -147,16 +149,17 @@
             txtPassword.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
             txtPassword.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtPassword.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtPassword.Font = new Font("Segoe UI", 9F);
+            txtPassword.Font = new Font("Calisto MT", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            txtPassword.ForeColor = Color.Black;
             txtPassword.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtPassword.Location = new Point(834, 362);
+            txtPassword.Location = new Point(807, 362);
             txtPassword.Margin = new Padding(3, 4, 3, 4);
             txtPassword.Name = "txtPassword";
             txtPassword.PlaceholderForeColor = Color.Gray;
             txtPassword.PlaceholderText = "Enter Password";
             txtPassword.SelectedText = "";
             txtPassword.ShadowDecoration.CustomizableEdges = customizableEdges6;
-            txtPassword.Size = new Size(218, 41);
+            txtPassword.Size = new Size(245, 37);
             txtPassword.TabIndex = 6;
             // 
             // btnRegister
@@ -188,16 +191,17 @@
             txtConfirmPassword.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
             txtConfirmPassword.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtConfirmPassword.FocusedState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtConfirmPassword.Font = new Font("Segoe UI", 9F);
+            txtConfirmPassword.Font = new Font("Calisto MT", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            txtConfirmPassword.ForeColor = Color.Black;
             txtConfirmPassword.HoverState.BorderColor = Color.FromArgb(94, 148, 255);
-            txtConfirmPassword.Location = new Point(834, 424);
+            txtConfirmPassword.Location = new Point(807, 424);
             txtConfirmPassword.Margin = new Padding(3, 4, 3, 4);
             txtConfirmPassword.Name = "txtConfirmPassword";
             txtConfirmPassword.PlaceholderForeColor = Color.Gray;
             txtConfirmPassword.PlaceholderText = "Confirm Password";
             txtConfirmPassword.SelectedText = "";
             txtConfirmPassword.ShadowDecoration.CustomizableEdges = customizableEdges10;
-            txtConfirmPassword.Size = new Size(218, 41);
+            txtConfirmPassword.Size = new Size(245, 37);
             txtConfirmPassword.TabIndex = 11;
             // 
             // lblConfirmPassword
@@ -240,10 +244,10 @@
             // 
             buttonClose.BackColor = Color.Transparent;
             buttonClose.Font = new Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            buttonClose.ForeColor = Color.FromArgb(192, 0, 0);
+            buttonClose.ForeColor = Color.Red;
             buttonClose.Location = new Point(1034, 0);
             buttonClose.Name = "buttonClose";
-            buttonClose.Size = new Size(42, 27);
+            buttonClose.Size = new Size(45, 30);
             buttonClose.TabIndex = 15;
             buttonClose.Text = "X";
             buttonClose.UseVisualStyleBackColor = false;

@@ -100,6 +100,7 @@ namespace ChatAppNats
 
         private async void ImageButtonSend_Click(object sender, EventArgs e)
         {
+            // Get the message and trim whitespace
             string message = txtMessage.Text.Trim();
             // Use local time for message saving and display
             DateTime sendAt = DateTime.Now;
@@ -788,6 +789,8 @@ namespace ChatAppNats
                 _logger.Error(ex, "Error loading group chat history for {User}", _userName);
                 MessageBox.Show("Error loading group chat history. Check logs.");
             }
+
+            // 
         }
     }
 }

@@ -1,12 +1,10 @@
-﻿
-using ChatAppNats.Data;
+﻿using ChatAppNats.Data;
 using ChatAppNats.Models;
 using ChatAppNats.Services;
 using Serilog;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing; // Make sure this is included
-using System.Windows.Forms; // Make sure this is included
+using System.Text.Json;
 
 namespace ChatAppNats
 {
@@ -38,6 +36,17 @@ namespace ChatAppNats
 
             // Ensure ChatService is initialized early
             _chatService = new ChatService(_userName, null, _logger);
+
+            _chatService.OnFileReceived += (fileMsg) =>
+            {
+                this.Invoke(new Action(() =>
+                {
+                    DisplayMessage(fileMsg.Sender, fileMsg.FileName, DateTime.Now,
+                        isMe: fileMsg.Sender.Equals(_userName, StringComparison.OrdinalIgnoreCase),
+                        isFile: true);
+                }));
+            };
+
             _createGroupForm = new CreateGroupForm(userName, _chatService);
 
             _logger = logger ?? Log.Logger;
@@ -191,33 +200,34 @@ namespace ChatAppNats
 
                 if (content.StartsWith("FILE:"))
                 {
-                    var fileParts = content.Split(new[] { ':' }, 3);
-                    if (fileParts.Length == 3)
-                    {
-                        string fileName = fileParts[1];
-                        string base64Data = fileParts[2];
-                        try
-                        {
-                            byte[] fileBytes = Convert.FromBase64String(base64Data);
-                            string downloadFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ChatDownloads");
-                            Directory.CreateDirectory(downloadFolder);
-                            string filePath = Path.Combine(downloadFolder, fileName);
-                            File.WriteAllBytes(filePath, fileBytes);
+                    //var fileParts = content.Split(new[] { ':' }, 3);
+                    //if (fileParts.Length == 3)
+                    //{
+                    //    string fileName = fileParts[1];
+                    //    string base64Data = fileParts[2];
+                    //    try
+                    //    {
+                    //        byte[] fileBytes = Convert.FromBase64String(base64Data);
+                    //        string downloadFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ChatDownloads");
+                    //        Directory.CreateDirectory(downloadFolder);
+                    //        string filePath = Path.Combine(downloadFolder, fileName);
+                    //        File.WriteAllBytes(filePath, fileBytes);
 
-                            if (flowLayoutPanelChat.InvokeRequired)
-                            {
-                                flowLayoutPanelChat.Invoke(new Action(() => DisplayMessage(displaySender, filePath, receivedAt, isMe, isFile: true)));
-                            }
-                            else
-                            {
-                                DisplayMessage(displaySender, filePath, receivedAt, isMe, isFile: true);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error(ex, "Failed to process received file message.");
-                        }
-                    }
+                    //        if (flowLayoutPanelChat.InvokeRequired)
+                    //        {
+                    //            flowLayoutPanelChat.Invoke(new Action(() => DisplayMessage(displaySender, filePath, receivedAt, isMe, isFile: true)));
+                    //        }
+                    //        else
+                    //        {
+                    //            DisplayMessage(displaySender, filePath, receivedAt, isMe, isFile: true);
+                    //        }
+                    //    }
+                    //    catch (Exception ex)
+                    //    {
+                    //        _logger.Error(ex, "Failed to process received file message.");
+                    //    }
+                    //}
+                    return;
                 }
                 else
                 {
@@ -292,6 +302,7 @@ namespace ChatAppNats
                     var senderUser = context.Users.FirstOrDefault(u => u.UserName == _userName);
                     if (senderUser == null) return;
 
+                    // Load text Messages
                     var chats = context.Messages
                         .Where(m => m.GroupId == null)
                         .Where(m =>
@@ -300,23 +311,49 @@ namespace ChatAppNats
                         .OrderBy(m => m.SendAt)
                         .ToList();
 
-                    var userIds = chats.Select(c => c.SenderId).Distinct().ToList();
+
+                    // Load File Messages
+                    var fileChats = context.FileMessages
+                        .Where(fm => fm.Sender == _userName || fm.Sender == context.Users.FirstOrDefault(u => u.UserId == targetUserId).UserName)
+                        .OrderBy(fm => fm.Timestamp)
+                        .ToList();
+
+                    //var userIds = chats.Select(c => c.SenderId).Distinct().ToList();
 
 
-                    var userMap = context.Users
-                        .Where(u => userIds.Contains(u.UserId))
-                        .ToDictionary(u => u.UserId, u => u.UserName);
+                    //var userMap = context.Users
+                    //    .Where(u => userIds.Contains(u.UserId))
+                    //    .ToDictionary(u => u.UserId, u => u.UserName);
 
                     // Clear and reset date tracker
                     flowLayoutPanelChat.Controls.Clear();
                     _lastMessageDate = null;
 
+
+                    // Display Text Messages
                     foreach (var msg in chats)
                     {
-                        string? senderName = userMap.ContainsKey(msg.SenderId) ? userMap[msg.SenderId] : $"User {msg.SenderId}";
+                        //string? senderName = userMap.ContainsKey(msg.SenderId) ? userMap[msg.SenderId] : $"User {msg.SenderId}";
                         bool isMe = msg.SenderId == senderUser.UserId;
 
-                        DisplayMessage(senderName, msg.Text, msg.SendAt, isMe: isMe);
+                        DisplayMessage(msg.SenderId.ToString(), msg.Text, msg.SendAt, isMe: isMe);
+                    }
+
+                    // Display File Messages
+                    foreach (var filemsg in fileChats)
+                    {
+                        bool isMe = filemsg.Sender.Equals(_userName, StringComparison.OrdinalIgnoreCase);
+                        string downloadFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ChatDownloads");
+                        Directory.CreateDirectory(downloadFolder);
+                        string fullPath = Path.Combine(downloadFolder, filemsg.FileName);
+
+                        // Ensure file exists on receiver
+                        if (!File.Exists(fullPath))
+                        {
+                            File.WriteAllBytes(fullPath, Convert.FromBase64String(filemsg.FileData));
+                        }
+
+                        DisplayMessage(filemsg.Sender, fullPath, filemsg.Timestamp, isMe: isMe, isFile: true);
                     }
                 }
             }
@@ -376,27 +413,53 @@ namespace ChatAppNats
         {
             try
             {
+                if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                {
+                    MessageBox.Show("File does not exist.");
+                    return;
+                }
+
                 byte[] fileBytes = File.ReadAllBytes(filePath);
                 string base64Data = Convert.ToBase64String(fileBytes);
-                string message = $"FILE:{fileName}:{base64Data}";
-                string finalMessage = $"{_userName}: {message}";
 
+
+                var fileMessage = new FileMessage
+                {
+                    Sender = _userName ?? string.Empty,
+                    Receiver = _selectedUser ?? string.Empty,
+                    FileName = fileName,
+                    FileData = base64Data,
+                    Timestamp = DateTime.UtcNow
+                };
+
+                // save to database
+                using (var context = new ApplicationDbContext())
+                {
+                    context.FileMessages.Add(fileMessage);
+                    await context.SaveChangesAsync();
+                }
+
+                string fileJson = JsonSerializer.Serialize(fileMessage);
+
+                // publish using a dedicated file topic
                 if (_selectedGroup != null)
                 {
-                    await _chatService.publishGroupMessageAsync(_selectedGroup.GroupId, finalMessage);
+                    await _chatService.PublishGroupFileAsync(_selectedGroup.GroupName, fileJson);
                 }
                 else if (_selectedUser != null)
                 {
-                    await _chatService.PublishMessageAsync(_selectedUser, finalMessage);
+                    await _chatService.PublishFileAsync(_selectedUser, fileJson);
                 }
                 else
                 {
                     MessageBox.Show("No receiver selected");
+                    _logger.Warning("Attempted to send file with no receiver selected for {User}", _userName);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error sending file: " + ex.Message);
+                _logger.Error(ex, "Error sending file from {User}", _userName);
             }
         }
 

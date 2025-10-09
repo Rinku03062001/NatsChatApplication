@@ -13,8 +13,8 @@
         public string? Text { get; set; }
         public DateTime SendAt { get; set; } = DateTime.Now;
         public bool IsRead { get; set; } = false;
-
-
+       
+        public bool IsFile { get; set; } = false;
         //public MessageStatus Status { get; set; } = MessageStatus.Pending;
     }
 

@@ -30,24 +30,17 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChatForm));
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             txtMessage = new TextBox();
             panelTypeMessage = new Panel();
-            ImageButtonEmojis = new Guna.UI2.WinForms.Guna2ImageButton();
-            ImageButtonAttachment = new Guna.UI2.WinForms.Guna2ImageButton();
-            ImageButtonSend = new Guna.UI2.WinForms.Guna2ImageButton();
+            pictureBoxSend = new PictureBox();
+            pictureBoxAttachment = new PictureBox();
+            pictureBoxEmoji = new PictureBox();
             splitContainer1 = new SplitContainer();
             panelLeft2 = new Panel();
             lstGroups = new ListBox();
             panelLeftHeader2 = new Panel();
+            pictureBoxCreateGroup = new PictureBox();
             lblChatTitle = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            ImageButtonCreateGroup = new Guna.UI2.WinForms.Guna2ImageButton();
             panelLeft1 = new Panel();
             listBoxUsers = new ListBox();
             panelLeftHeader1 = new Panel();
@@ -56,42 +49,55 @@
             panelShowMessage = new Panel();
             flowLayoutPanelChat = new FlowLayoutPanel();
             topPanel = new Panel();
-            guna2ImageButton1 = new Guna.UI2.WinForms.Guna2ImageButton();
-            ImageButtonAudioCall = new Guna.UI2.WinForms.Guna2ImageButton();
-            ImageButtonVideoCall = new Guna.UI2.WinForms.Guna2ImageButton();
+            pictureBoxVoiceCall = new PictureBox();
+            pictureBoxSearch = new PictureBox();
+            pictureBoxLogOut = new PictureBox();
+            pictureBoxVideoCall = new PictureBox();
+            lblChatUser = new Label();
             contextMenuStrip1 = new ContextMenuStrip(components);
             toolStripMenuItem1 = new ToolStripMenuItem();
+            toolTipPictureBox = new ToolTip(components);
             panelTypeMessage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxSend).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxAttachment).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxEmoji).BeginInit();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
             panelLeft2.SuspendLayout();
             panelLeftHeader2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxCreateGroup).BeginInit();
             panelLeft1.SuspendLayout();
             panelLeftHeader1.SuspendLayout();
             panel1.SuspendLayout();
             panelShowMessage.SuspendLayout();
             topPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxVoiceCall).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxSearch).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxLogOut).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxVideoCall).BeginInit();
             contextMenuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // txtMessage
             // 
             txtMessage.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            txtMessage.Location = new Point(102, 10);
+            txtMessage.HideSelection = false;
+            txtMessage.Location = new Point(91, 10);
             txtMessage.Margin = new Padding(3, 2, 3, 2);
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
-            txtMessage.Size = new Size(548, 51);
+            txtMessage.PlaceholderText = "Type a Message......";
+            txtMessage.Size = new Size(559, 51);
             txtMessage.TabIndex = 1;
             // 
             // panelTypeMessage
             // 
-            panelTypeMessage.Controls.Add(ImageButtonEmojis);
+            panelTypeMessage.Controls.Add(pictureBoxSend);
             panelTypeMessage.Controls.Add(txtMessage);
-            panelTypeMessage.Controls.Add(ImageButtonAttachment);
-            panelTypeMessage.Controls.Add(ImageButtonSend);
+            panelTypeMessage.Controls.Add(pictureBoxAttachment);
+            panelTypeMessage.Controls.Add(pictureBoxEmoji);
             panelTypeMessage.Dock = DockStyle.Bottom;
             panelTypeMessage.Location = new Point(0, 359);
             panelTypeMessage.Margin = new Padding(3, 2, 3, 2);
@@ -99,57 +105,40 @@
             panelTypeMessage.Size = new Size(699, 65);
             panelTypeMessage.TabIndex = 4;
             // 
-            // ImageButtonEmojis
+            // pictureBoxSend
             // 
-            ImageButtonEmojis.CheckedState.ImageSize = new Size(64, 64);
-            ImageButtonEmojis.HoverState.ImageSize = new Size(64, 64);
-            ImageButtonEmojis.Image = (Image)resources.GetObject("ImageButtonEmojis.Image");
-            ImageButtonEmojis.ImageOffset = new Point(0, 0);
-            ImageButtonEmojis.ImageRotate = 0F;
-            ImageButtonEmojis.ImageSize = new Size(36, 36);
-            ImageButtonEmojis.Location = new Point(11, 11);
-            ImageButtonEmojis.Margin = new Padding(3, 2, 3, 2);
-            ImageButtonEmojis.Name = "ImageButtonEmojis";
-            ImageButtonEmojis.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonEmojis.ShadowDecoration.CustomizableEdges = customizableEdges1;
-            ImageButtonEmojis.Size = new Size(33, 49);
-            ImageButtonEmojis.TabIndex = 6;
+            pictureBoxSend.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pictureBoxSend.BackColor = Color.Transparent;
+            pictureBoxSend.BackgroundImageLayout = ImageLayout.Zoom;
+            pictureBoxSend.Image = (Image)resources.GetObject("pictureBoxSend.Image");
+            pictureBoxSend.Location = new Point(656, 20);
+            pictureBoxSend.Name = "pictureBoxSend";
+            pictureBoxSend.Size = new Size(34, 33);
+            pictureBoxSend.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxSend.TabIndex = 7;
+            pictureBoxSend.TabStop = false;
+            pictureBoxSend.Click += pictureBoxSend_Click;
             // 
-            // ImageButtonAttachment
+            // pictureBoxAttachment
             // 
-            ImageButtonAttachment.CheckedState.ImageSize = new Size(64, 64);
-            ImageButtonAttachment.HoverState.ImageSize = new Size(64, 64);
-            ImageButtonAttachment.Image = (Image)resources.GetObject("ImageButtonAttachment.Image");
-            ImageButtonAttachment.ImageOffset = new Point(0, 0);
-            ImageButtonAttachment.ImageRotate = 0F;
-            ImageButtonAttachment.ImageSize = new Size(36, 36);
-            ImageButtonAttachment.Location = new Point(54, 11);
-            ImageButtonAttachment.Margin = new Padding(3, 2, 3, 2);
-            ImageButtonAttachment.Name = "ImageButtonAttachment";
-            ImageButtonAttachment.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonAttachment.ShadowDecoration.CustomizableEdges = customizableEdges2;
-            ImageButtonAttachment.Size = new Size(32, 49);
-            ImageButtonAttachment.TabIndex = 5;
-            ImageButtonAttachment.Click += ImageButtonAttachment_Click;
+            pictureBoxAttachment.Image = (Image)resources.GetObject("pictureBoxAttachment.Image");
+            pictureBoxAttachment.Location = new Point(47, 20);
+            pictureBoxAttachment.Name = "pictureBoxAttachment";
+            pictureBoxAttachment.Size = new Size(38, 32);
+            pictureBoxAttachment.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxAttachment.TabIndex = 7;
+            pictureBoxAttachment.TabStop = false;
+            pictureBoxAttachment.Click += pictureBoxAttachment_Click;
             // 
-            // ImageButtonSend
+            // pictureBoxEmoji
             // 
-            ImageButtonSend.Anchor = AnchorStyles.Right;
-            ImageButtonSend.BackColor = Color.Transparent;
-            ImageButtonSend.CheckedState.ImageSize = new Size(64, 64);
-            ImageButtonSend.HoverState.ImageSize = new Size(64, 64);
-            ImageButtonSend.Image = (Image)resources.GetObject("ImageButtonSend.Image");
-            ImageButtonSend.ImageOffset = new Point(0, 0);
-            ImageButtonSend.ImageRotate = 0F;
-            ImageButtonSend.ImageSize = new Size(36, 36);
-            ImageButtonSend.Location = new Point(654, 11);
-            ImageButtonSend.Margin = new Padding(3, 2, 3, 2);
-            ImageButtonSend.Name = "ImageButtonSend";
-            ImageButtonSend.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonSend.ShadowDecoration.CustomizableEdges = customizableEdges3;
-            ImageButtonSend.Size = new Size(40, 49);
-            ImageButtonSend.TabIndex = 4;
-            ImageButtonSend.Click += ImageButtonSend_Click;
+            pictureBoxEmoji.Image = (Image)resources.GetObject("pictureBoxEmoji.Image");
+            pictureBoxEmoji.Location = new Point(3, 20);
+            pictureBoxEmoji.Name = "pictureBoxEmoji";
+            pictureBoxEmoji.Size = new Size(38, 32);
+            pictureBoxEmoji.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxEmoji.TabIndex = 7;
+            pictureBoxEmoji.TabStop = false;
             // 
             // splitContainer1
             // 
@@ -198,14 +187,25 @@
             // panelLeftHeader2
             // 
             panelLeftHeader2.BackColor = Color.Transparent;
+            panelLeftHeader2.Controls.Add(pictureBoxCreateGroup);
             panelLeftHeader2.Controls.Add(lblChatTitle);
-            panelLeftHeader2.Controls.Add(ImageButtonCreateGroup);
             panelLeftHeader2.Dock = DockStyle.Top;
             panelLeftHeader2.Location = new Point(0, 0);
             panelLeftHeader2.Margin = new Padding(3, 2, 3, 2);
             panelLeftHeader2.Name = "panelLeftHeader2";
             panelLeftHeader2.Size = new Size(153, 37);
             panelLeftHeader2.TabIndex = 1;
+            // 
+            // pictureBoxCreateGroup
+            // 
+            pictureBoxCreateGroup.Image = (Image)resources.GetObject("pictureBoxCreateGroup.Image");
+            pictureBoxCreateGroup.Location = new Point(118, 10);
+            pictureBoxCreateGroup.Name = "pictureBoxCreateGroup";
+            pictureBoxCreateGroup.Size = new Size(32, 24);
+            pictureBoxCreateGroup.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxCreateGroup.TabIndex = 4;
+            pictureBoxCreateGroup.TabStop = false;
+            pictureBoxCreateGroup.Click += pictureBoxCreateGroup_Click;
             // 
             // lblChatTitle
             // 
@@ -218,24 +218,6 @@
             lblChatTitle.Size = new Size(57, 23);
             lblChatTitle.TabIndex = 3;
             lblChatTitle.Text = "Groups\r\n";
-            // 
-            // ImageButtonCreateGroup
-            // 
-            ImageButtonCreateGroup.BackColor = Color.Transparent;
-            ImageButtonCreateGroup.CheckedState.ImageSize = new Size(64, 64);
-            ImageButtonCreateGroup.HoverState.ImageSize = new Size(64, 64);
-            ImageButtonCreateGroup.Image = (Image)resources.GetObject("ImageButtonCreateGroup.Image");
-            ImageButtonCreateGroup.ImageOffset = new Point(0, 0);
-            ImageButtonCreateGroup.ImageRotate = 0F;
-            ImageButtonCreateGroup.ImageSize = new Size(30, 30);
-            ImageButtonCreateGroup.Location = new Point(114, 10);
-            ImageButtonCreateGroup.Margin = new Padding(3, 2, 3, 2);
-            ImageButtonCreateGroup.Name = "ImageButtonCreateGroup";
-            ImageButtonCreateGroup.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonCreateGroup.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            ImageButtonCreateGroup.Size = new Size(37, 22);
-            ImageButtonCreateGroup.TabIndex = 2;
-            ImageButtonCreateGroup.Click += ImageButtonCreateGroup_Click;
             // 
             // panelLeft1
             // 
@@ -324,9 +306,11 @@
             // topPanel
             // 
             topPanel.BackColor = SystemColors.InactiveCaption;
-            topPanel.Controls.Add(guna2ImageButton1);
-            topPanel.Controls.Add(ImageButtonAudioCall);
-            topPanel.Controls.Add(ImageButtonVideoCall);
+            topPanel.Controls.Add(pictureBoxVoiceCall);
+            topPanel.Controls.Add(pictureBoxSearch);
+            topPanel.Controls.Add(pictureBoxLogOut);
+            topPanel.Controls.Add(pictureBoxVideoCall);
+            topPanel.Controls.Add(lblChatUser);
             topPanel.Dock = DockStyle.Top;
             topPanel.Location = new Point(0, 0);
             topPanel.Margin = new Padding(3, 2, 3, 2);
@@ -334,57 +318,73 @@
             topPanel.Size = new Size(699, 37);
             topPanel.TabIndex = 7;
             // 
-            // guna2ImageButton1
+            // pictureBoxVoiceCall
             // 
-            guna2ImageButton1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            guna2ImageButton1.CheckedState.ImageSize = new Size(64, 64);
-            guna2ImageButton1.HoverState.ImageSize = new Size(64, 64);
-            guna2ImageButton1.Image = (Image)resources.GetObject("guna2ImageButton1.Image");
-            guna2ImageButton1.ImageOffset = new Point(0, 0);
-            guna2ImageButton1.ImageRotate = 0F;
-            guna2ImageButton1.ImageSize = new Size(30, 30);
-            guna2ImageButton1.Location = new Point(653, 4);
-            guna2ImageButton1.Margin = new Padding(3, 2, 3, 2);
-            guna2ImageButton1.Name = "guna2ImageButton1";
-            guna2ImageButton1.PressedState.ImageSize = new Size(64, 64);
-            guna2ImageButton1.ShadowDecoration.CustomizableEdges = customizableEdges5;
-            guna2ImageButton1.Size = new Size(32, 30);
-            guna2ImageButton1.TabIndex = 0;
+            pictureBoxVoiceCall.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pictureBoxVoiceCall.BackColor = Color.Transparent;
+            pictureBoxVoiceCall.BackgroundImageLayout = ImageLayout.Zoom;
+            pictureBoxVoiceCall.Image = (Image)resources.GetObject("pictureBoxVoiceCall.Image");
+            pictureBoxVoiceCall.InitialImage = (Image)resources.GetObject("pictureBoxVoiceCall.InitialImage");
+            pictureBoxVoiceCall.Location = new Point(618, 5);
+            pictureBoxVoiceCall.Name = "pictureBoxVoiceCall";
+            pictureBoxVoiceCall.Size = new Size(35, 25);
+            pictureBoxVoiceCall.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxVoiceCall.TabIndex = 7;
+            pictureBoxVoiceCall.TabStop = false;
             // 
-            // ImageButtonAudioCall
+            // pictureBoxSearch
             // 
-            ImageButtonAudioCall.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            ImageButtonAudioCall.CheckedState.ImageSize = new Size(64, 64);
-            ImageButtonAudioCall.HoverState.ImageSize = new Size(64, 64);
-            ImageButtonAudioCall.Image = (Image)resources.GetObject("ImageButtonAudioCall.Image");
-            ImageButtonAudioCall.ImageOffset = new Point(0, 0);
-            ImageButtonAudioCall.ImageRotate = 0F;
-            ImageButtonAudioCall.ImageSize = new Size(30, 30);
-            ImageButtonAudioCall.Location = new Point(604, 2);
-            ImageButtonAudioCall.Margin = new Padding(3, 2, 3, 2);
-            ImageButtonAudioCall.Name = "ImageButtonAudioCall";
-            ImageButtonAudioCall.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonAudioCall.ShadowDecoration.CustomizableEdges = customizableEdges6;
-            ImageButtonAudioCall.Size = new Size(32, 32);
-            ImageButtonAudioCall.TabIndex = 0;
+            pictureBoxSearch.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pictureBoxSearch.BackColor = Color.Transparent;
+            pictureBoxSearch.BackgroundImageLayout = ImageLayout.Zoom;
+            pictureBoxSearch.Image = (Image)resources.GetObject("pictureBoxSearch.Image");
+            pictureBoxSearch.InitialImage = (Image)resources.GetObject("pictureBoxSearch.InitialImage");
+            pictureBoxSearch.Location = new Point(659, 5);
+            pictureBoxSearch.Name = "pictureBoxSearch";
+            pictureBoxSearch.Size = new Size(35, 25);
+            pictureBoxSearch.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxSearch.TabIndex = 7;
+            pictureBoxSearch.TabStop = false;
             // 
-            // ImageButtonVideoCall
+            // pictureBoxLogOut
             // 
-            ImageButtonVideoCall.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            ImageButtonVideoCall.AnimatedGIF = true;
-            ImageButtonVideoCall.CheckedState.ImageSize = new Size(64, 64);
-            ImageButtonVideoCall.HoverState.ImageSize = new Size(64, 64);
-            ImageButtonVideoCall.Image = (Image)resources.GetObject("ImageButtonVideoCall.Image");
-            ImageButtonVideoCall.ImageOffset = new Point(0, 0);
-            ImageButtonVideoCall.ImageRotate = 0F;
-            ImageButtonVideoCall.ImageSize = new Size(30, 30);
-            ImageButtonVideoCall.Location = new Point(547, 2);
-            ImageButtonVideoCall.Margin = new Padding(3, 2, 3, 2);
-            ImageButtonVideoCall.Name = "ImageButtonVideoCall";
-            ImageButtonVideoCall.PressedState.ImageSize = new Size(64, 64);
-            ImageButtonVideoCall.ShadowDecoration.CustomizableEdges = customizableEdges7;
-            ImageButtonVideoCall.Size = new Size(32, 32);
-            ImageButtonVideoCall.TabIndex = 0;
+            pictureBoxLogOut.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pictureBoxLogOut.BackColor = Color.Transparent;
+            pictureBoxLogOut.BackgroundImageLayout = ImageLayout.Zoom;
+            pictureBoxLogOut.Image = (Image)resources.GetObject("pictureBoxLogOut.Image");
+            pictureBoxLogOut.InitialImage = (Image)resources.GetObject("pictureBoxLogOut.InitialImage");
+            pictureBoxLogOut.Location = new Point(521, 5);
+            pictureBoxLogOut.Name = "pictureBoxLogOut";
+            pictureBoxLogOut.Size = new Size(35, 25);
+            pictureBoxLogOut.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxLogOut.TabIndex = 7;
+            pictureBoxLogOut.TabStop = false;
+            pictureBoxLogOut.Click += pictureBoxLogOut_Click;
+            // 
+            // pictureBoxVideoCall
+            // 
+            pictureBoxVideoCall.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            pictureBoxVideoCall.BackColor = Color.Transparent;
+            pictureBoxVideoCall.BackgroundImageLayout = ImageLayout.Zoom;
+            pictureBoxVideoCall.Image = (Image)resources.GetObject("pictureBoxVideoCall.Image");
+            pictureBoxVideoCall.InitialImage = (Image)resources.GetObject("pictureBoxVideoCall.InitialImage");
+            pictureBoxVideoCall.Location = new Point(574, 5);
+            pictureBoxVideoCall.Name = "pictureBoxVideoCall";
+            pictureBoxVideoCall.Size = new Size(35, 25);
+            pictureBoxVideoCall.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxVideoCall.TabIndex = 7;
+            pictureBoxVideoCall.TabStop = false;
+            // 
+            // lblChatUser
+            // 
+            lblChatUser.AutoSize = true;
+            lblChatUser.Font = new Font("Segoe UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblChatUser.ForeColor = Color.Navy;
+            lblChatUser.Location = new Point(35, 10);
+            lblChatUser.Name = "lblChatUser";
+            lblChatUser.Size = new Size(95, 20);
+            lblChatUser.TabIndex = 2;
+            lblChatUser.Text = "select a user";
             // 
             // contextMenuStrip1
             // 
@@ -397,6 +397,10 @@
             toolStripMenuItem1.Name = "toolStripMenuItem1";
             toolStripMenuItem1.Size = new Size(180, 22);
             toolStripMenuItem1.Text = "toolStripMenuItem1";
+            // 
+            // toolTipPictureBox
+            // 
+            toolTipPictureBox.Popup += toolTipLogout_Popup;
             // 
             // ChatForm
             // 
@@ -416,6 +420,9 @@
             Load += ChatForm_Load;
             panelTypeMessage.ResumeLayout(false);
             panelTypeMessage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxSend).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxAttachment).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxEmoji).EndInit();
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
@@ -423,12 +430,18 @@
             panelLeft2.ResumeLayout(false);
             panelLeftHeader2.ResumeLayout(false);
             panelLeftHeader2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxCreateGroup).EndInit();
             panelLeft1.ResumeLayout(false);
             panelLeftHeader1.ResumeLayout(false);
             panelLeftHeader1.PerformLayout();
             panel1.ResumeLayout(false);
             panelShowMessage.ResumeLayout(false);
             topPanel.ResumeLayout(false);
+            topPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxVoiceCall).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxSearch).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxLogOut).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxVideoCall).EndInit();
             contextMenuStrip1.ResumeLayout(false);
             ResumeLayout(false);
         }
@@ -438,16 +451,11 @@
         private Panel panelTypeMessage;
         private SplitContainer splitContainer1;
         private ListBox listBoxUsers;
-        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonSend;
-        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonAttachment;
-        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonEmojis;
         private FlowLayoutPanel flowLayoutPanelChat;
         private Panel topPanel;
-        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonVideoCall;
         private Guna.UI2.WinForms.Guna2ImageButton ImageButtonAudioCall;
         private Guna.UI2.WinForms.Guna2ImageButton guna2ImageButton1;
         private Guna.UI2.WinForms.Guna2HtmlLabel guna2HtmlLabel1;
-        private Guna.UI2.WinForms.Guna2ImageButton ImageButtonCreateGroup;
         private ListBox lstGroups;
         private Guna.UI2.WinForms.Guna2HtmlLabel lblChatTitle;
         private Panel panelLeft1;
@@ -458,5 +466,15 @@
         private Panel panelShowMessage;
         private ContextMenuStrip contextMenuStrip1;
         private ToolStripMenuItem toolStripMenuItem1;
+        private Label lblChatUser;
+        private PictureBox pictureBoxVideoCall;
+        private PictureBox pictureBoxVoiceCall;
+        private PictureBox pictureBoxSearch;
+        private PictureBox pictureBoxLogOut;
+        private PictureBox pictureBoxSend;
+        private PictureBox pictureBoxAttachment;
+        private PictureBox pictureBoxEmoji;
+        private ToolTip toolTipPictureBox;
+        private PictureBox pictureBoxCreateGroup;
     }
 }

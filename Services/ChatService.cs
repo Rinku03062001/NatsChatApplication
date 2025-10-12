@@ -1,9 +1,10 @@
-﻿
+﻿using ChatAppNats.Models;
 using Microsoft.Data.SqlClient;
 using NATS.Client;
 using NATS.Client.JetStream;
 using Serilog;
 using System.Text;
+using System.Text.Json;
 
 namespace ChatAppNats.Services
 {
@@ -20,15 +21,16 @@ namespace ChatAppNats.Services
         private string _durableName;
 
         private readonly ILogger _logger;
-        //private static string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
-        private static string connectionString = @"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
-                                        Database=SynapseDB;
-                                        User Id=Rinku2001;
-                                        Password=Rin-#KU29%;
-                                        TrustServerCertificate=True;
-                                        Encrypt=True;
-                                        Connect Timeout=60;";
+        private static string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
+        //private static string connectionString = @"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
+        //                                Database=SynapseDB;
+        //                                User Id=Rinku2001;
+        //                                Password=Rin-#KU29%;
+        //                                TrustServerCertificate=True;
+        //                                Encrypt=True;
+        //                                Connect Timeout=60;";
 
+        public event Action<FileMessage> OnFileReceived;
 
         public ChatService(string userName, string targetUser, ILogger logger = null)
         {
@@ -75,6 +77,33 @@ namespace ChatAppNats.Services
                     _jsm.AddStream(streamConfig);
                     _logger.Information("Stream {StreamName} created", StreamName);
                 }
+
+                _connection.SubscribeAsync($"chat.file.{_userName}", (sender, args) =>
+                {
+                    string json = Encoding.UTF8.GetString(args.Message.Data);
+                    var fileMessage = JsonSerializer.Deserialize<FileMessage>(json);
+
+                    // Save to Database for persistance
+                    using (var context = new Data.ApplicationDbContext())
+                    {
+                        if (fileMessage.Receiver?.Trim().ToLower() == _userName)
+                        {
+                            context.FileMessages.Add(fileMessage);
+                            context.SaveChanges();
+                        }
+
+                    }
+
+                    string saveFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ChatDownloads");
+                    Directory.CreateDirectory(saveFolder);
+
+                    string fullPath = Path.Combine(saveFolder, fileMessage.FileName);
+                    File.WriteAllBytes(fullPath, Convert.FromBase64String(fileMessage.FileData));
+
+                    _logger.Information("File received and saved at {Path}", fullPath);
+
+                    OnFileReceived?.Invoke(fileMessage);
+                });
             }
             catch (Exception ex)
             {
@@ -117,6 +146,41 @@ namespace ChatAppNats.Services
         }
 
 
+
+        public async Task PublishFileAsync(string receiver, string fileJson)
+        {
+            try
+            {
+                var data = Encoding.UTF8.GetBytes(fileJson);
+                await Task.Run(() => _connection.Publish($"chat.file.{receiver}", data));
+                _logger.Information("File metadata published by {User} to {Receiver}, size={Size}",
+                    _userName, receiver, data.Length);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error publishing file metadata: {ex.Message}");
+                _logger.Error(ex, "Error publishing file metadata to {Receiver} by {User}", receiver, _userName);
+            }
+        }
+
+
+
+
+        public async Task PublishGroupFileAsync(string groupName, string fileJson)
+        {
+            try
+            {
+                var data = Encoding.UTF8.GetBytes(fileJson);
+                await Task.Run(() => _connection.Publish($"chat.file.group.{groupName}", data));
+                _logger.Information("File metadata published by {User} to group {GroupId}, size={Size}",
+                    _userName, groupName, data.Length);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error publishing file metadata to group: {ex.Message}");
+                _logger.Error(ex, "Error publishing file metadata to group {GroupId} by {User}", groupName, _userName);
+            }
+        }
 
         public void SubscribeDurable(Action<string> onMessage)
         {

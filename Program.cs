@@ -1,5 +1,6 @@
 
 using ChatAppNats.Data;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualBasic;
 using Serilog;
 using System.IO;
@@ -41,9 +42,48 @@ namespace ChatAppNats
                 //    var canConnect = context.Database.CanConnect();
                 //    Console.WriteLine(canConnect ? "Connected!" : "Cannot connect!");
                 //}
+                
+                string lastUser = Properties.Settings.Default.LastUser;
 
-                RegisterForm registerForm = new RegisterForm();
-                Application.Run(new RegisterForm());
+                if(!string.IsNullOrWhiteSpace(lastUser))
+                {
+                    // retrieve username from Database based on email
+                    string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
+                    string? userName = null;
+
+                    using(SqlConnection con = new SqlConnection(connectionString))
+                    {
+                        con.Open();
+                        string query = "Select UserName from Users where Email=@Email";
+                        using(SqlCommand cmd = new SqlCommand(query, con))
+                        {
+                            cmd.Parameters.AddWithValue("@Email", lastUser);
+                            object result = cmd.ExecuteScalar();
+                            if(result != null)
+                            {
+                                userName = result.ToString();
+                            }
+                        }
+                    }
+
+                    if(!string.IsNullOrEmpty((userName)))
+                    {
+                        Application.Run(new ChatForm(userName));
+                    }
+                    else
+                    {
+                        // If user not foun, fallback to login form
+                        Application.Run(new LoginForm());
+                    }
+                }
+                else
+                {
+                    // no saved user, show login form
+                    LoginForm loginForm = new LoginForm();
+                    Application.Run(loginForm);
+                }
+
+                 
 
                 // prompt for username
                 //string enteredName = Interaction.InputBox("Enter Your UserName: ", "Chat Form");

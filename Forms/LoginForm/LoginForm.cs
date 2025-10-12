@@ -21,7 +21,6 @@ namespace ChatAppNats
         {
             InitializeComponent();
             linkLabelForgetPassword.Click += linkLabelForgetPassword_Click;
-            ;
         }
 
 
@@ -52,14 +51,16 @@ namespace ChatAppNats
                     cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
 
                     //int count = Convert.ToInt32(cmd.ExecuteScalar());
-                    var result = cmd.ExecuteScalar();
+                    object result = cmd.ExecuteScalar();
 
                     if (result != null)
                     {
                         string? loggedInUser = result.ToString();
 
-                        // MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        // TODO: Open ChatForm or MainForm
+                        // save email so we can auto login in the next time
+                        Properties.Settings.Default.LastUser = email;
+                        Properties.Settings.Default.Save();
+
                         this.Hide();
 
                         if (string.IsNullOrWhiteSpace(loggedInUser))
@@ -67,15 +68,9 @@ namespace ChatAppNats
                             loggedInUser = email;
                         }
 
-
-                        //// prompt for targt user
-                        //string enteredTarget = Interaction.InputBox("Enter target user for direct chat (leave blank for global):", "Chat Form");
-                        //string? targetuser = string.IsNullOrWhiteSpace(enteredTarget) ? null : enteredTarget;
-
-
                         ChatForm chatForm = new ChatForm(loggedInUser);
                         chatForm.Show();
-                        this.Close();
+                        this.Hide();
                     }
                     else
                     {
@@ -112,7 +107,7 @@ namespace ChatAppNats
         {
             RegisterForm registerForm = new RegisterForm();
             registerForm.Show();
-            this.Close();
+            this.Hide();
         }
 
 
@@ -150,7 +145,7 @@ namespace ChatAppNats
                 "Enter your registered email to reset your password",
                 "Forgot Password",
                 "");
-            this.Close();
+            this.Hide();
 
             if (string.IsNullOrEmpty(email))
             {
@@ -215,6 +210,8 @@ namespace ChatAppNats
         {
             this.Close();
         }
+
+
     }
 }
 

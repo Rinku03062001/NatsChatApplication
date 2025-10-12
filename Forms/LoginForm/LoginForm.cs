@@ -8,14 +8,14 @@ namespace ChatAppNats
 {
     public partial class LoginForm : Form
     {
-        //private string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
-        private string connectionString = @"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
-                                        Database=SynapseDB;
-                                        User Id=Rinku2001;
-                                        Password=Rin-#KU29%;
-                                        TrustServerCertificate=True;
-                                        Encrypt=True;
-                                        Connect Timeout=60;";
+        private string connectionString = @"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True";
+        //private string connectionString = @"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
+        //                                Database=SynapseDB;
+        //                                User Id=Rinku2001;
+        //                                Password=Rin-#KU29%;
+        //                                TrustServerCertificate=True;
+        //                                Encrypt=True;
+        //                                Connect Timeout=60;";
 
         public LoginForm()
         {

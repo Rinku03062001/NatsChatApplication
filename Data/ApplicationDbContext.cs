@@ -14,22 +14,19 @@ namespace ChatAppNats.Data
         public DbSet<Models.Message> Messages { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<GroupMember> GroupMembers { get; set; }
+        public DbSet<FileMessage> FileMessages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //optionsBuilder.UseSqlServer(@"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True");
-            optionsBuilder.UseSqlServer(@"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
-                                        Database=SynapseDB;
-                                        User Id=Rinku2001;
-                                        Password=Rin-#KU29%;
-                                        TrustServerCertificate=True;
-                                        Encrypt=True;
-                                        Connect Timeout=60;"
-                                        //sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
-                                        //maxRetryCount: 5,              // Number of retries
-                                        //maxRetryDelay: TimeSpan.FromSeconds(10), // Delay between retries
-                                        //errorNumbersToAdd: null)
-                                       );
+            optionsBuilder.UseSqlServer(@"server=RINKU-LAPPY\SQLEXPRESS; Database=ChatAppDB; TrustServerCertificate=True; Trusted_Connection=True;MultipleActiveResultSets=true");
+            //optionsBuilder.UseSqlServer(@"Server=synapsedb.c1ysu4usmo3z.ap-south-1.rds.amazonaws.com, 1433;
+            //                            Database=SynapseDB;
+            //                            User Id=Rinku2001;
+            //                            Password=Rin-#KU29%;
+            //                            TrustServerCertificate=True;
+            //                            Encrypt=True;
+            //                            Connect Timeout=60;"
+            //                           );
                                         
                                         
         }

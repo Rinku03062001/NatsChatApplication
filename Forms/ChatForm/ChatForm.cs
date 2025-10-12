@@ -27,12 +27,29 @@ namespace ChatAppNats
         // Track the date of the last displayed message for date dividers
         private DateTime? _lastMessageDate = null;
 
+        private string currentUser;
+
         public ChatForm(string? userName, ILogger? logger = null)
         {
             InitializeComponent();
 
+            // set tooltips for all picture boxes
+            toolTipPictureBox.SetToolTip(pictureBoxLogOut, "Log Out");
+            toolTipPictureBox.SetToolTip(pictureBoxVideoCall, "Video Call");
+            toolTipPictureBox.SetToolTip(pictureBoxVoiceCall, "Voice Call");
+            toolTipPictureBox.SetToolTip(pictureBoxSend, "Send Message");
+            toolTipPictureBox.SetToolTip(pictureBoxAttachment, "Attach");
+            toolTipPictureBox.SetToolTip(pictureBoxEmoji, "Send Emoji's");
+            toolTipPictureBox.SetToolTip(pictureBoxCreateGroup, "Create Group");
+
+
+            currentUser = userName ?? "Unknown";
+            lblChatUser.Text = "Welcome " + currentUser;
+
             _userName = (userName ?? "Unknown").Trim().ToLower();
             Text = $"Synapse - {_userName}";
+
+
 
             // Ensure ChatService is initialized early
             _chatService = new ChatService(_userName, null, _logger);
@@ -67,6 +84,7 @@ namespace ChatAppNats
 
         private void ChatForm_Load(object sender, EventArgs e)
         {
+            AddHoverEffectToAllPictures(this);
             try
             {
                 // Ensure CurrentUserId is set on load
@@ -98,9 +116,10 @@ namespace ChatAppNats
         }
 
 
-        private async void ImageButtonSend_Click(object sender, EventArgs e)
+
+
+        private async void pictureBoxSend_Click(object sender, EventArgs e)
         {
-            // Get the message and trim whitespace
             string message = txtMessage.Text.Trim();
             // Use local time for message saving and display
             DateTime sendAt = DateTime.Now;
@@ -267,6 +286,9 @@ namespace ChatAppNats
             {
                 try
                 {
+                    lblChatUser.Text = listBoxUsers.Text;
+
+
                     lstGroups.ClearSelected();
                     _selectedGroup = null;
 
@@ -309,52 +331,65 @@ namespace ChatAppNats
                         .Where(m =>
                             (m.SenderId == senderUser.UserId && m.ReceiverId == targetUserId) ||
                             (m.SenderId == targetUserId && m.ReceiverId == senderUser.UserId))
-                        .OrderBy(m => m.SendAt)
+                        //.OrderBy(m => m.SendAt)
+                        //.ToList();
+                        .Select(m => new
+                        {
+                            Sender = context.Users.FirstOrDefault(u => u.UserId == m.SenderId).UserName,
+                            Content = m.Text,
+                            Timestamp = m.SendAt,
+                            IsMe = m.SenderId == senderUser.UserId,
+                            IsFile = false
+                        })
                         .ToList();
 
 
                     // Load File Messages
+                    var targetUser = context.Users.FirstOrDefault(u => u.UserId == targetUserId);
                     var fileChats = context.FileMessages
-                        .Where(fm => fm.Sender == _userName || fm.Sender == context.Users.FirstOrDefault(u => u.UserId == targetUserId).UserName)
-                        .OrderBy(fm => fm.Timestamp)
+                        .Where(fm =>
+                            (fm.Sender == _userName && fm.Receiver == targetUser.UserName) ||
+                            (fm.Sender == targetUser.UserName && fm.Receiver == _userName))
+                        .Select(fm => new
+                        {
+                            Sender = fm.Sender,
+                            Content = fm.FileName,
+                            Timestamp = fm.Timestamp,
+                            IsMe = fm.Sender == _userName,
+                            IsFile = true,
+                            FileData = fm.FileData
+                        })
                         .ToList();
 
-                    //var userIds = chats.Select(c => c.SenderId).Distinct().ToList();
 
-
-                    //var userMap = context.Users
-                    //    .Where(u => userIds.Contains(u.UserId))
-                    //    .ToDictionary(u => u.UserId, u => u.UserName);
+                    // Merge and sort all messages by timestamp
+                    var allMessages = chats.Concat(fileChats.Cast<dynamic>())
+                                            .OrderBy(t => t.Timestamp)
+                                            .ToList();
 
                     // Clear and reset date tracker
                     flowLayoutPanelChat.Controls.Clear();
                     _lastMessageDate = null;
 
-
                     // Display Text Messages
-                    foreach (var msg in chats)
+                    foreach (var msg in allMessages)
                     {
-                        //string? senderName = userMap.ContainsKey(msg.SenderId) ? userMap[msg.SenderId] : $"User {msg.SenderId}";
-                        bool isMe = msg.SenderId == senderUser.UserId;
-
-                        DisplayMessage(msg.SenderId.ToString(), msg.Text, msg.SendAt, isMe: isMe);
-                    }
-
-                    // Display File Messages
-                    foreach (var filemsg in fileChats)
-                    {
-                        bool isMe = filemsg.Sender.Equals(_userName, StringComparison.OrdinalIgnoreCase);
-                        string downloadFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ChatDownloads");
-                        Directory.CreateDirectory(downloadFolder);
-                        string fullPath = Path.Combine(downloadFolder, filemsg.FileName);
-
-                        // Ensure file exists on receiver
-                        if (!File.Exists(fullPath))
+                        if (msg.IsFile)
                         {
-                            File.WriteAllBytes(fullPath, Convert.FromBase64String(filemsg.FileData));
+                            string downloadFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ChatDownloads");
+                            Directory.CreateDirectory(downloadFolder);
+                            string fullPath = Path.Combine(downloadFolder, msg.Content);
+                            // Ensure file exists on receiver
+                            if (!File.Exists(fullPath))
+                            {
+                                File.WriteAllBytes(fullPath, Convert.FromBase64String(msg.FileData));
+                            }
+                            DisplayMessage(msg.Sender, fullPath, msg.Timestamp, isMe: msg.IsMe, isFile: true);
                         }
-
-                        DisplayMessage(filemsg.Sender, fullPath, filemsg.Timestamp, isMe: isMe, isFile: true);
+                        else
+                        {
+                            DisplayMessage(msg.Sender, msg.Content, msg.Timestamp, isMe: msg.IsMe);
+                        }
                     }
                 }
             }
@@ -364,9 +399,12 @@ namespace ChatAppNats
             }
         }
 
-        // ... (ImageButtonAttachment_Click and SendFileToReceiver are unchanged)
 
-        private void ImageButtonAttachment_Click(object sender, EventArgs e)
+
+
+
+
+        private void pictureBoxAttachment_Click(object sender, EventArgs e)
         {
             if (_selectedUser == null && _selectedGroup == null)
             {
@@ -409,6 +447,11 @@ namespace ChatAppNats
                 }
             }
         }
+
+
+
+
+
 
         private async void SendFileToReceiver(string filePath, string fileName)
         {
@@ -683,7 +726,7 @@ namespace ChatAppNats
 
 
 
-        private void ImageButtonCreateGroup_Click(object sender, EventArgs e)
+        private void pictureBoxCreateGroup_Click(object sender, EventArgs e)
         {
             var createGroupForm = new CreateGroupForm(_userName, _chatService);
             createGroupForm.GroupCreated += () => LoadGroups();
@@ -691,11 +734,12 @@ namespace ChatAppNats
         }
 
 
-
         private void lstGroups_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedItem = lstGroups.SelectedItem;
             if (selectedItem == null) return;
+
+            lblChatUser.Text = lstGroups.Text;
 
             try
             {
@@ -789,8 +833,57 @@ namespace ChatAppNats
                 _logger.Error(ex, "Error loading group chat history for {User}", _userName);
                 MessageBox.Show("Error loading group chat history. Check logs.");
             }
-
-            // 
         }
+
+        private void pictureBoxLogOut_Click(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.LastUser = string.Empty;
+            Properties.Settings.Default.Save();
+
+            LoginForm login = new LoginForm();
+            login.Show();
+            this.Close();
+        }
+
+
+        private void PictureBox_MouseEnter(object sender, EventArgs e)
+        {
+            PictureBox? pic = sender as PictureBox;
+            pic.BackColor = Color.FromArgb(220, 240, 255);  // soft blue glow
+            pic.Size = new Size(40, 40);                    // slightly enlarge
+            pic.Cursor = Cursors.Hand;
+            pic.Location = new Point(pic.Location.X - 2, pic.Location.Y - 2); // keep centered
+        }
+
+        private void PictureBox_MouseLeave(object sender, EventArgs e)
+        {
+            PictureBox? pic = sender as PictureBox;
+            pic.BackColor = Color.Transparent;
+            pic.Size = new Size(35, 35);                    // original size
+            pic.Location = new Point(pic.Location.X + 2, pic.Location.Y + 2);
+        }
+
+        private void AddHoverEffectToAllPictures(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                if (c is PictureBox pic)
+                {
+                    pic.MouseEnter += PictureBox_MouseEnter;
+                    pic.MouseLeave += PictureBox_MouseLeave;
+                }
+
+                // Check inside nested containers
+                if (c.HasChildren)
+                    AddHoverEffectToAllPictures(c);
+            }
+        }
+
+        private void toolTipLogout_Popup(object sender, PopupEventArgs e)
+        {
+
+        }
+
+        
     }
 }

@@ -168,6 +168,7 @@ namespace ChatAppNats
                 {
                     try
                     {
+                        conn.Open();
                         string query = "insert into Users (UserName, Email, PasswordHash, CreatedAt) values (@UserName, @Email, @PasswordHash, @CreatedAt)";
                         using (SqlCommand cmd = new SqlCommand(query, conn))
                         {

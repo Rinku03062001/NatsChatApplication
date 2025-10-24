@@ -49,13 +49,20 @@
             panelShowMessage = new Panel();
             flowLayoutPanelChat = new FlowLayoutPanel();
             topPanel = new Panel();
+            s = new Panel();
+            lblChatUser = new Label();
             pictureBoxVoiceCall = new PictureBox();
             pictureBoxSearch = new PictureBox();
             pictureBoxLogOut = new PictureBox();
             pictureBoxVideoCall = new PictureBox();
-            lblChatUser = new Label();
             contextMenuStrip1 = new ContextMenuStrip(components);
             toolStripMenuItem1 = new ToolStripMenuItem();
+            photosAndVideosToolStripMenuItem = new ToolStripMenuItem();
+            cameraToolStripMenuItem = new ToolStripMenuItem();
+            documentToolStripMenuItem = new ToolStripMenuItem();
+            contactToolStripMenuItem = new ToolStripMenuItem();
+            poolToolStripMenuItem = new ToolStripMenuItem();
+            drawingToolStripMenuItem = new ToolStripMenuItem();
             toolTipPictureBox = new ToolTip(components);
             panelTypeMessage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSend).BeginInit();
@@ -73,6 +80,7 @@
             panel1.SuspendLayout();
             panelShowMessage.SuspendLayout();
             topPanel.SuspendLayout();
+            s.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxVoiceCall).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSearch).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxLogOut).BeginInit();
@@ -89,7 +97,7 @@
             txtMessage.Multiline = true;
             txtMessage.Name = "txtMessage";
             txtMessage.PlaceholderText = "Type a Message......";
-            txtMessage.Size = new Size(559, 51);
+            txtMessage.Size = new Size(462, 51);
             txtMessage.TabIndex = 1;
             // 
             // panelTypeMessage
@@ -102,7 +110,7 @@
             panelTypeMessage.Location = new Point(0, 359);
             panelTypeMessage.Margin = new Padding(3, 2, 3, 2);
             panelTypeMessage.Name = "panelTypeMessage";
-            panelTypeMessage.Size = new Size(699, 65);
+            panelTypeMessage.Size = new Size(602, 65);
             panelTypeMessage.TabIndex = 4;
             // 
             // pictureBoxSend
@@ -111,7 +119,7 @@
             pictureBoxSend.BackColor = Color.Transparent;
             pictureBoxSend.BackgroundImageLayout = ImageLayout.Zoom;
             pictureBoxSend.Image = (Image)resources.GetObject("pictureBoxSend.Image");
-            pictureBoxSend.Location = new Point(656, 20);
+            pictureBoxSend.Location = new Point(559, 20);
             pictureBoxSend.Name = "pictureBoxSend";
             pictureBoxSend.Size = new Size(34, 33);
             pictureBoxSend.SizeMode = PictureBoxSizeMode.Zoom;
@@ -156,8 +164,8 @@
             // 
             splitContainer1.Panel2.Controls.Add(panel1);
             splitContainer1.Panel2.Controls.Add(panelTypeMessage);
-            splitContainer1.Size = new Size(1029, 424);
-            splitContainer1.SplitterDistance = 326;
+            splitContainer1.Size = new Size(887, 424);
+            splitContainer1.SplitterDistance = 281;
             splitContainer1.TabIndex = 6;
             // 
             // panelLeft2
@@ -165,7 +173,7 @@
             panelLeft2.Controls.Add(lstGroups);
             panelLeft2.Controls.Add(panelLeftHeader2);
             panelLeft2.Dock = DockStyle.Right;
-            panelLeft2.Location = new Point(173, 0);
+            panelLeft2.Location = new Point(128, 0);
             panelLeft2.Margin = new Padding(3, 2, 3, 2);
             panelLeft2.Name = "panelLeft2";
             panelLeft2.Size = new Size(153, 424);
@@ -227,7 +235,7 @@
             panelLeft1.Location = new Point(0, 0);
             panelLeft1.Margin = new Padding(3, 2, 3, 2);
             panelLeft1.Name = "panelLeft1";
-            panelLeft1.Size = new Size(326, 424);
+            panelLeft1.Size = new Size(281, 424);
             panelLeft1.TabIndex = 4;
             // 
             // listBoxUsers
@@ -242,7 +250,7 @@
             listBoxUsers.Location = new Point(0, 37);
             listBoxUsers.Margin = new Padding(3, 2, 3, 2);
             listBoxUsers.Name = "listBoxUsers";
-            listBoxUsers.Size = new Size(326, 387);
+            listBoxUsers.Size = new Size(281, 387);
             listBoxUsers.TabIndex = 0;
             listBoxUsers.SelectedIndexChanged += listBoxUsers_SelectedIndexChanged;
             // 
@@ -254,7 +262,7 @@
             panelLeftHeader1.Location = new Point(0, 0);
             panelLeftHeader1.Margin = new Padding(3, 2, 3, 2);
             panelLeftHeader1.Name = "panelLeftHeader1";
-            panelLeftHeader1.Size = new Size(326, 37);
+            panelLeftHeader1.Size = new Size(281, 37);
             panelLeftHeader1.TabIndex = 0;
             // 
             // guna2HtmlLabel1
@@ -277,7 +285,7 @@
             panel1.Location = new Point(0, 0);
             panel1.Margin = new Padding(3, 2, 3, 2);
             panel1.Name = "panel1";
-            panel1.Size = new Size(699, 359);
+            panel1.Size = new Size(602, 359);
             panel1.TabIndex = 5;
             // 
             // panelShowMessage
@@ -287,7 +295,7 @@
             panelShowMessage.Location = new Point(0, 37);
             panelShowMessage.Margin = new Padding(3, 2, 3, 2);
             panelShowMessage.Name = "panelShowMessage";
-            panelShowMessage.Size = new Size(699, 322);
+            panelShowMessage.Size = new Size(602, 322);
             panelShowMessage.TabIndex = 8;
             // 
             // flowLayoutPanelChat
@@ -299,24 +307,44 @@
             flowLayoutPanelChat.Location = new Point(0, 0);
             flowLayoutPanelChat.Margin = new Padding(3, 2, 3, 2);
             flowLayoutPanelChat.Name = "flowLayoutPanelChat";
-            flowLayoutPanelChat.Size = new Size(699, 322);
+            flowLayoutPanelChat.Size = new Size(602, 322);
             flowLayoutPanelChat.TabIndex = 6;
             flowLayoutPanelChat.WrapContents = false;
             // 
             // topPanel
             // 
             topPanel.BackColor = SystemColors.InactiveCaption;
+            topPanel.Controls.Add(s);
             topPanel.Controls.Add(pictureBoxVoiceCall);
             topPanel.Controls.Add(pictureBoxSearch);
             topPanel.Controls.Add(pictureBoxLogOut);
             topPanel.Controls.Add(pictureBoxVideoCall);
-            topPanel.Controls.Add(lblChatUser);
             topPanel.Dock = DockStyle.Top;
             topPanel.Location = new Point(0, 0);
             topPanel.Margin = new Padding(3, 2, 3, 2);
             topPanel.Name = "topPanel";
-            topPanel.Size = new Size(699, 37);
+            topPanel.Size = new Size(602, 37);
             topPanel.TabIndex = 7;
+            // 
+            // s
+            // 
+            s.Controls.Add(lblChatUser);
+            s.Dock = DockStyle.Left;
+            s.Location = new Point(0, 0);
+            s.Name = "s";
+            s.Size = new Size(292, 37);
+            s.TabIndex = 8;
+            // 
+            // lblChatUser
+            // 
+            lblChatUser.AutoSize = true;
+            lblChatUser.Font = new Font("Segoe UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblChatUser.ForeColor = Color.Navy;
+            lblChatUser.Location = new Point(47, 10);
+            lblChatUser.Name = "lblChatUser";
+            lblChatUser.Size = new Size(95, 20);
+            lblChatUser.TabIndex = 2;
+            lblChatUser.Text = "select a user";
             // 
             // pictureBoxVoiceCall
             // 
@@ -325,7 +353,7 @@
             pictureBoxVoiceCall.BackgroundImageLayout = ImageLayout.Zoom;
             pictureBoxVoiceCall.Image = (Image)resources.GetObject("pictureBoxVoiceCall.Image");
             pictureBoxVoiceCall.InitialImage = (Image)resources.GetObject("pictureBoxVoiceCall.InitialImage");
-            pictureBoxVoiceCall.Location = new Point(618, 5);
+            pictureBoxVoiceCall.Location = new Point(521, 5);
             pictureBoxVoiceCall.Name = "pictureBoxVoiceCall";
             pictureBoxVoiceCall.Size = new Size(35, 25);
             pictureBoxVoiceCall.SizeMode = PictureBoxSizeMode.Zoom;
@@ -339,7 +367,7 @@
             pictureBoxSearch.BackgroundImageLayout = ImageLayout.Zoom;
             pictureBoxSearch.Image = (Image)resources.GetObject("pictureBoxSearch.Image");
             pictureBoxSearch.InitialImage = (Image)resources.GetObject("pictureBoxSearch.InitialImage");
-            pictureBoxSearch.Location = new Point(659, 5);
+            pictureBoxSearch.Location = new Point(562, 5);
             pictureBoxSearch.Name = "pictureBoxSearch";
             pictureBoxSearch.Size = new Size(35, 25);
             pictureBoxSearch.SizeMode = PictureBoxSizeMode.Zoom;
@@ -353,7 +381,7 @@
             pictureBoxLogOut.BackgroundImageLayout = ImageLayout.Zoom;
             pictureBoxLogOut.Image = (Image)resources.GetObject("pictureBoxLogOut.Image");
             pictureBoxLogOut.InitialImage = (Image)resources.GetObject("pictureBoxLogOut.InitialImage");
-            pictureBoxLogOut.Location = new Point(521, 5);
+            pictureBoxLogOut.Location = new Point(424, 5);
             pictureBoxLogOut.Name = "pictureBoxLogOut";
             pictureBoxLogOut.Size = new Size(35, 25);
             pictureBoxLogOut.SizeMode = PictureBoxSizeMode.Zoom;
@@ -368,29 +396,18 @@
             pictureBoxVideoCall.BackgroundImageLayout = ImageLayout.Zoom;
             pictureBoxVideoCall.Image = (Image)resources.GetObject("pictureBoxVideoCall.Image");
             pictureBoxVideoCall.InitialImage = (Image)resources.GetObject("pictureBoxVideoCall.InitialImage");
-            pictureBoxVideoCall.Location = new Point(574, 5);
+            pictureBoxVideoCall.Location = new Point(477, 5);
             pictureBoxVideoCall.Name = "pictureBoxVideoCall";
             pictureBoxVideoCall.Size = new Size(35, 25);
             pictureBoxVideoCall.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxVideoCall.TabIndex = 7;
             pictureBoxVideoCall.TabStop = false;
             // 
-            // lblChatUser
-            // 
-            lblChatUser.AutoSize = true;
-            lblChatUser.Font = new Font("Segoe UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblChatUser.ForeColor = Color.Navy;
-            lblChatUser.Location = new Point(35, 10);
-            lblChatUser.Name = "lblChatUser";
-            lblChatUser.Size = new Size(95, 20);
-            lblChatUser.TabIndex = 2;
-            lblChatUser.Text = "select a user";
-            // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItem1 });
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItem1, photosAndVideosToolStripMenuItem, cameraToolStripMenuItem, documentToolStripMenuItem, contactToolStripMenuItem, poolToolStripMenuItem, drawingToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new Size(181, 26);
+            contextMenuStrip1.Size = new Size(181, 158);
             // 
             // toolStripMenuItem1
             // 
@@ -398,9 +415,41 @@
             toolStripMenuItem1.Size = new Size(180, 22);
             toolStripMenuItem1.Text = "toolStripMenuItem1";
             // 
-            // toolTipPictureBox
+            // photosAndVideosToolStripMenuItem
             // 
-            toolTipPictureBox.Popup += toolTipLogout_Popup;
+            photosAndVideosToolStripMenuItem.Name = "photosAndVideosToolStripMenuItem";
+            photosAndVideosToolStripMenuItem.Size = new Size(180, 22);
+            photosAndVideosToolStripMenuItem.Text = "Photos and Videos";
+            // 
+            // cameraToolStripMenuItem
+            // 
+            cameraToolStripMenuItem.Name = "cameraToolStripMenuItem";
+            cameraToolStripMenuItem.Size = new Size(180, 22);
+            cameraToolStripMenuItem.Text = "Camera";
+            // 
+            // documentToolStripMenuItem
+            // 
+            documentToolStripMenuItem.Name = "documentToolStripMenuItem";
+            documentToolStripMenuItem.Size = new Size(180, 22);
+            documentToolStripMenuItem.Text = "Document";
+            // 
+            // contactToolStripMenuItem
+            // 
+            contactToolStripMenuItem.Name = "contactToolStripMenuItem";
+            contactToolStripMenuItem.Size = new Size(180, 22);
+            contactToolStripMenuItem.Text = "Contact";
+            // 
+            // poolToolStripMenuItem
+            // 
+            poolToolStripMenuItem.Name = "poolToolStripMenuItem";
+            poolToolStripMenuItem.Size = new Size(180, 22);
+            poolToolStripMenuItem.Text = "Pool";
+            // 
+            // drawingToolStripMenuItem
+            // 
+            drawingToolStripMenuItem.Name = "drawingToolStripMenuItem";
+            drawingToolStripMenuItem.Size = new Size(180, 22);
+            drawingToolStripMenuItem.Text = "Drawing";
             // 
             // ChatForm
             // 
@@ -408,7 +457,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             BackColor = Color.LightSkyBlue;
-            ClientSize = new Size(1029, 424);
+            ClientSize = new Size(887, 424);
             Controls.Add(splitContainer1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -437,7 +486,8 @@
             panel1.ResumeLayout(false);
             panelShowMessage.ResumeLayout(false);
             topPanel.ResumeLayout(false);
-            topPanel.PerformLayout();
+            s.ResumeLayout(false);
+            s.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxVoiceCall).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSearch).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxLogOut).EndInit();
@@ -476,5 +526,12 @@
         private PictureBox pictureBoxEmoji;
         private ToolTip toolTipPictureBox;
         private PictureBox pictureBoxCreateGroup;
+        private Panel s;
+        private ToolStripMenuItem photosAndVideosToolStripMenuItem;
+        private ToolStripMenuItem cameraToolStripMenuItem;
+        private ToolStripMenuItem documentToolStripMenuItem;
+        private ToolStripMenuItem contactToolStripMenuItem;
+        private ToolStripMenuItem poolToolStripMenuItem;
+        private ToolStripMenuItem drawingToolStripMenuItem;
     }
 }

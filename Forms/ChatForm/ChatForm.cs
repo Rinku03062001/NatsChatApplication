@@ -878,12 +878,5 @@ namespace ChatAppNats
                     AddHoverEffectToAllPictures(c);
             }
         }
-
-        private void toolTipLogout_Popup(object sender, PopupEventArgs e)
-        {
-
-        }
-
-        
     }
 }
